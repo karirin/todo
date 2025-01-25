@@ -9,17 +9,19 @@ import SwiftUI
 import Firebase
 import FirebaseDatabase
 
-struct TodoItem: Identifiable, Codable {
+struct TodoItem: Identifiable, Codable, Equatable {
     let id: String
     var title: String
     var isCompleted: Bool
     var dueDate: Date
+    var order: Int // 並び順を管理するフィールドを追加
 
-    init(id: String = UUID().uuidString, title: String, isCompleted: Bool = false, dueDate: Date = Date()) {
+    init(id: String = UUID().uuidString, title: String, isCompleted: Bool = false, dueDate: Date = Date(), order: Int = 0) {
         self.id = id
         self.title = title
         self.isCompleted = isCompleted
         self.dueDate = dueDate
+        self.order = order
     }
 }
 
@@ -86,9 +88,12 @@ class TodoViewModel: ObservableObject {
                         timestamp = doubleFromString
                     }
                     
+                    // order を Int 型として取得
+                    let order = dict["order"] as? Int ?? 0
+                    
                     if let timestamp = timestamp {
                         let dueDate = Date(timeIntervalSince1970: timestamp)
-                        let item = TodoItem(id: childSnapshot.key, title: title, isCompleted: isCompleted, dueDate: dueDate)
+                        let item = TodoItem(id: childSnapshot.key, title: title, isCompleted: isCompleted, dueDate: dueDate, order: order)
                         
                         newItems.append(item)
                         print("newItems1 (after append): \(newItems)")
@@ -100,6 +105,9 @@ class TodoViewModel: ObservableObject {
                 }
             }
             
+            // order に基づいてソート
+            newItems.sort { $0.order < $1.order }
+            
             DispatchQueue.main.async {
                 print("DispatchQueue.main.async block is executing")
                 print("newItems2 :\(newItems)")
@@ -108,14 +116,14 @@ class TodoViewModel: ObservableObject {
         })
     }
 
-
-    
     func addItem(title: String, dueDate: Date) {
         let key = ref.childByAutoId().key ?? UUID().uuidString
+        let newOrder = (items.map { $0.order }.max() ?? 0) + 1
         let newItem: [String : Any] = [
             "title": title,
             "isCompleted": false,
-            "dueDate": dueDate.timeIntervalSince1970
+            "dueDate": dueDate.timeIntervalSince1970,
+            "order": newOrder
         ]
         ref.child(key).setValue(newItem)
     }
@@ -128,6 +136,11 @@ class TodoViewModel: ObservableObject {
         }
     }
     
+    func removeItem(_ item: TodoItem) {
+        let key = item.id
+        ref.child(key).removeValue()
+    }
+    
     func toggleCompletion(of item: TodoItem) {
         if let index = items.firstIndex(where: { $0.id == item.id }) {
             let updatedStatus = !items[index].isCompleted
@@ -136,7 +149,28 @@ class TodoViewModel: ObservableObject {
             ref.child(key).child("isCompleted").setValue(updatedStatus) // Bool 値として保存
         }
     }
+    
+    func moveItem(from source: IndexSet, to destination: Int) {
+        var revisedItems = items
+        revisedItems.move(fromOffsets: source, toOffset: destination)
+        items = revisedItems
+        
+        // order を更新して Firebase に反映
+        for (index, item) in items.enumerated() {
+            let key = item.id
+            ref.child(key).child("order").setValue(index)
+        }
+    }
+    
+    // 並び替え用のカスタム関数
+    func reorderItems(draggingItem: TodoItem, to newIndex: Int) {
+        guard let currentIndex = items.firstIndex(where: { $0.id == draggingItem.id }) else { return }
+        let item = items.remove(at: currentIndex)
+        items.insert(item, at: newIndex)
+        moveItem(from: IndexSet(integer: currentIndex), to: newIndex)
+    }
 }
+
 
 
 struct ContentView: View {
@@ -149,21 +183,19 @@ struct ContentView: View {
     }
     
     var body: some View {
-        NavigationView {
-            VStack {
-                TabView {
-                    TodoListView(todoViewModel: todoViewModel)
-                        .tabItem {
-                            Label("Todo", systemImage: "checkmark.circle")
-                        }
-                    
-                    CalendarView(todoViewModel: todoViewModel)
-                        .tabItem {
-                            Label("Calendar", systemImage: "calendar")
-                        }
-                }
+//        NavigationView {
+            TabView {
+                TodoListView(todoViewModel: todoViewModel)
+                    .tabItem {
+                        Label("Todo", systemImage: "checkmark.circle")
+                    }
+                
+                CalendarView(todoViewModel: todoViewModel)
+                    .tabItem {
+                        Label("Calendar", systemImage: "calendar")
+                    }
             }
-        }
+//        }
         .onAppear {
             if authManager.user == nil {
                 authManager.anonymousSignIn {
@@ -181,52 +213,143 @@ struct ContentView: View {
     }
 }
 
+struct TodoRowView: View {
+    let item: TodoItem
+    @Binding var draggingItem: TodoItem?
+    @Binding var dragOffset: CGSize
+    @ObservedObject var todoViewModel: TodoViewModel
+    @State private var showingAlert = false
+    @State private var isDragging: Bool = false
+    @State private var originalOrder: Int = 0
+    
+    var body: some View {
+        HStack {
+            // チェックボタン
+            Image(systemName: item.isCompleted ? "checkmark.circle.fill" : "circle")
+                .foregroundColor(item.isCompleted ? .green : .gray)
+                .onTapGesture {
+                    todoViewModel.toggleCompletion(of: item)
+                }
+                .padding(.trailing, 10)
+            
+            // タイトルと期限日
+            HStack{
+                VStack(alignment: .leading){
+                    Text(item.title)
+                        .font(.system(size: 20))
+                        .strikethrough(item.isCompleted, color: .black)
+                        .foregroundColor(item.isCompleted ? .gray : .black)
+                    HStack {
+                        Image(systemName: "calendar.circle")
+                            .font(.system(size: 16))
+                            .foregroundColor(.gray)
+                            .padding(.trailing, -5)
+                        Text("\(formattedDate(item.dueDate))")
+                            .font(.system(size: 16))
+                            .foregroundColor(.gray)
+                    }
+                }
+                Spacer()
+            }
+            .frame(maxWidth: .infinity)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                todoViewModel.toggleCompletion(of: item)
+            }
+            Button(action: {
+                showingAlert = true
+            }) {
+                Image(systemName: "trash")
+                    .foregroundColor(.red)
+            }
+            .padding(.trailing, 10)
+            // ドラッグハンドル
+//            Image(systemName: "line.horizontal.3")
+//                .foregroundColor(.gray)
+//                .padding(.leading, 10)
+//                .gesture(
+//                    LongPressGesture(minimumDuration: 0.2)
+//                        .onEnded { _ in
+//                            withAnimation {
+//                                self.draggingItem = item
+//                                self.originalOrder = todoViewModel.items.firstIndex(where: { $0.id == item.id }) ?? 0
+//                            }
+//                        }
+//                )
+        }
+        .padding()
+        .background(
+            isDragging ? Color.blue.opacity(0.2) : Color.white
+        )
+        .cornerRadius(8)
+        .shadow(color: isDragging ? Color.blue.opacity(0.5) : Color.gray.opacity(0.2), radius: 5, x: 0, y: isDragging ? 5 : 0)
+        .offset(draggingItem?.id == item.id ? dragOffset : .zero)
+        .opacity(draggingItem?.id == item.id ? 0.7 : 1.0)
+        .scaleEffect(draggingItem?.id == item.id ? 1.05 : 1.0)
+        .animation(.easeInOut, value: dragOffset)
+        .onChange(of: draggingItem) { newValue in
+            self.isDragging = newValue?.id == item.id
+        }
+        .alert(isPresented: Binding<Bool>(
+             get: { self.showingAlert },
+             set: { _ in }
+         )) {
+             Alert(
+                 title: Text("削除確認"),
+                 message: Text("このTodoを削除してもよろしいですか？"),
+                 primaryButton: .destructive(Text("削除")) {
+                     todoViewModel.removeItem(item)
+                 },
+                 secondaryButton: .cancel()
+             )
+         }
+    }
+    
+    func formattedDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ja_JP")
+        formatter.dateFormat = "yyyy年M月d日(E)"
+        return formatter.string(from: date)
+    }
+}
+
 struct TodoListView: View {
     @ObservedObject var todoViewModel: TodoViewModel
     @State private var newTodoTitle: String = ""
     @State private var postFlag = false
     
+    // ドラッグ中のアイテム
+    @State private var draggingItem: TodoItem?
+    // ドラッグ中の位置
+    @State private var dragOffset: CGSize = .zero
+    
     var body: some View {
         ZStack {
             VStack {
-                HStack{
-                       Spacer()
-                       Text("TODO一覧")
-                           .font(.system(size: 20))
-                       Spacer()
-                   }
-                    .frame(maxWidth:.infinity,maxHeight:60)
-                   .background(Color.gray)
-                   .foregroundColor(Color.white)
-                ForEach(todoViewModel.items) { item in
-                    HStack {
-                        Image(systemName: item.isCompleted ? "checkmark.circle.fill" : "circle")
-                            .foregroundColor(item.isCompleted ? .green : .gray)
-                        VStack(alignment: .leading) {
-                            Text(item.title)
-                                .font(.system(size: 24))
-                                .strikethrough(item.isCompleted, color: .black)
-                                .foregroundColor(item.isCompleted ? .gray : .black)
-                            HStack{
-                                Image(systemName: "calendar.circle")
-                                    .font(.system(size: 16))
-                                    .foregroundColor(.gray)
-                                    .padding(.trailing, -5)
-                                Text("\(formattedDate(item.dueDate))")
-                                    .font(.system(size: 16))
-                                    .foregroundColor(.gray)
-                            }
-                        }
-                        Spacer()
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .contentShape(Rectangle()) // ここを追加
-                    .onTapGesture {
-                        todoViewModel.toggleCompletion(of: item)
-                    }
-                    Divider()
+                HStack {
+                    Spacer()
+                    Text("TODO一覧")
+                        .font(.system(size: 20))
+                    Spacer()
                 }
+                .frame(maxWidth: .infinity, maxHeight: 60)
+                .background(Color.gray)
+                .foregroundColor(Color.white)
+                
+                ScrollView {
+                    VStack(spacing: 10) {
+                        ForEach(todoViewModel.items) { item in
+                            TodoRowView(
+                                item: item,
+                                draggingItem: $draggingItem,
+                                dragOffset: $dragOffset,
+                                todoViewModel: todoViewModel
+                            )
+                        }
+                    }
+                    .padding()
+                }
+                
                 Spacer()
             }
             VStack {
@@ -256,13 +379,32 @@ struct TodoListView: View {
                                       .fraction(isSmallDevice() ? 0.65 : 0.55)
                 ])
         }
-    }
-    
-    func formattedDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "ja_JP") // ロケールを日本に設定
-        formatter.dateFormat = "yyyy年M月d日(E)" // カスタムフォーマット
-        return formatter.string(from: date)
+        .gesture(
+            DragGesture()
+                .onChanged { value in
+                    guard let draggingItem = draggingItem else { return }
+                    self.dragOffset = value.translation
+                    
+                    // ドラッグ位置に基づいてアイテムを並び替え
+                    if let currentIndex = todoViewModel.items.firstIndex(where: { $0.id == draggingItem.id }) {
+                        let newY = value.location.y
+                        let itemHeight: CGFloat = 80 // アイテムの高さに合わせて調整
+                        let newIndex = Int((newY - 100) / (itemHeight + 10)) // スクロールビューのオフセットに合わせて調整
+                        
+                        if newIndex >= 0 && newIndex < todoViewModel.items.count {
+                            if newIndex != currentIndex {
+                                withAnimation {
+                                    todoViewModel.reorderItems(draggingItem: draggingItem, to: newIndex)
+                                }
+                            }
+                        }
+                    }
+                }
+                .onEnded { _ in
+                    self.draggingItem = nil
+                    self.dragOffset = .zero
+                }
+        )
     }
     
     func isSmallDevice() -> Bool {
@@ -401,7 +543,7 @@ struct AddPostView: View {
 struct CalendarView: View {
     @ObservedObject var todoViewModel: TodoViewModel
     @State private var currentDate = Date()
-    @State private var selectedDate: Date? = nil
+    @State private var selectedDate: Date? = Date()
     
     var body: some View {
         VStack {
@@ -513,7 +655,7 @@ struct CalendarView: View {
                         }
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .contentShape(Rectangle()) // ここを追加
+                        .contentShape(Rectangle())
                         .onTapGesture {
                             todoViewModel.toggleCompletion(of: item)
                         }
