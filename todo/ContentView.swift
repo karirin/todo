@@ -163,7 +163,6 @@ struct ContentView: View {
                         }
                 }
             }
-            .navigationTitle("Todoアプリ")
         }
         .onAppear {
             if authManager.user == nil {
@@ -190,25 +189,45 @@ struct TodoListView: View {
     var body: some View {
         ZStack {
             VStack {
-                List {
-                    ForEach(todoViewModel.items) { item in
-                        HStack {
-                            Image(systemName: item.isCompleted ? "checkmark.circle.fill" : "circle")
-                                .onTapGesture {
-                                    todoViewModel.toggleCompletion(of: item)
-                                }
-                            VStack(alignment: .leading) {
-                                Text(item.title)
-                                    .strikethrough(item.isCompleted, color: .black)
-                                    .foregroundColor(item.isCompleted ? .gray : .black)
-                                Text("期限: \(formattedDate(item.dueDate))")
-                                    .font(.subheadline)
+                HStack{
+                       Spacer()
+                       Text("TODO一覧")
+                           .font(.system(size: 20))
+                       Spacer()
+                   }
+                    .frame(maxWidth:.infinity,maxHeight:60)
+                   .background(Color.gray)
+                   .foregroundColor(Color.white)
+                ForEach(todoViewModel.items) { item in
+                    HStack {
+                        Image(systemName: item.isCompleted ? "checkmark.circle.fill" : "circle")
+                            .foregroundColor(item.isCompleted ? .green : .gray)
+                        VStack(alignment: .leading) {
+                            Text(item.title)
+                                .font(.system(size: 24))
+                                .strikethrough(item.isCompleted, color: .black)
+                                .foregroundColor(item.isCompleted ? .gray : .black)
+                            HStack{
+                                Image(systemName: "calendar.circle")
+                                    .font(.system(size: 16))
+                                    .foregroundColor(.gray)
+                                    .padding(.trailing, -5)
+                                Text("\(formattedDate(item.dueDate))")
+                                    .font(.system(size: 16))
                                     .foregroundColor(.gray)
                             }
                         }
+                        Spacer()
                     }
-                    .onDelete(perform: todoViewModel.removeItems)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .contentShape(Rectangle()) // ここを追加
+                    .onTapGesture {
+                        todoViewModel.toggleCompletion(of: item)
+                    }
+                    Divider()
                 }
+                Spacer()
             }
             VStack {
                 Spacer()
@@ -233,16 +252,16 @@ struct TodoListView: View {
         .sheet(isPresented: $postFlag) {
             AddPostView(text: $newTodoTitle, todoViewModel: todoViewModel)
                 .presentationDetents([.large,
-                                      .height(200),
+                                      .height(280),
                                       .fraction(isSmallDevice() ? 0.65 : 0.55)
                 ])
         }
-        .navigationTitle("Todoリスト")
     }
     
     func formattedDate(_ date: Date) -> String {
         let formatter = DateFormatter()
-        formatter.dateStyle = .medium
+        formatter.locale = Locale(identifier: "ja_JP") // ロケールを日本に設定
+        formatter.dateFormat = "yyyy年M月d日(E)" // カスタムフォーマット
         return formatter.string(from: date)
     }
     
@@ -256,48 +275,128 @@ struct AddPostView: View {
     @ObservedObject var todoViewModel: TodoViewModel
     @Environment(\.presentationMode) var presentationMode
     @State private var selectedDate: Date = Date()
+    @State private var isCalendarVisible: Bool = false // カレンダー表示の状態管理
     
     var body: some View {
-        VStack(spacing: 20) {
-            HStack{
-                Rectangle()
-                    .frame(width:5,height: 20)
-                    .foregroundColor(Color.black)
-                Text("TODOを追加する")
-                    .font(.headline)
-                Spacer()
-            }
-            TextField("新しいタスクを入力", text: $text)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .font(.system(size: 18))
-            
-            DatePicker("期限日", selection: $selectedDate, displayedComponents: [.date])
-                .datePickerStyle(GraphicalDatePickerStyle())
-                .padding(.horizontal)
-            
-            Divider()
-            
-            Button(action: {
-                let trimmedTitle = text.trimmingCharacters(in: .whitespaces)
-                guard !trimmedTitle.isEmpty else { return }
-                todoViewModel.addItem(title: trimmedTitle, dueDate: selectedDate)
-                text = ""
-                presentationMode.wrappedValue.dismiss()
-            }) {
-                Text("追加")
-                    .fontWeight(.bold)
-                    .frame(maxWidth:.infinity)
-                    .padding()
-                    .background(Color.black)
-                    .foregroundColor(.white)
+        ScrollView { // スクロールビューを追加して、キーボード表示時のレイアウト崩れを防ぐ
+            VStack(spacing: 10) {
+                HStack {
+                    Rectangle()
+                        .frame(width:5, height: 20)
+                        .foregroundColor(Color.black)
+                    Text("ToDoを追加する")
+                        .font(.headline)
+                    Spacer()
+                }
+                
+                TextField("新しいタスクを入力", text: $text)
+                    .border(Color.clear, width: 0)
+                    .font(.system(size: 20))
                     .cornerRadius(8)
+                Divider()
+                
+                // 日付選択用のボタン群
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        Rectangle()
+                            .frame(width:5, height: 20)
+                            .foregroundColor(Color.black)
+                        Text("ToDo実施日")
+                            .font(.headline)
+                        Spacer()
+                    }
+                    
+                    HStack(spacing: 15) {
+                        Button(action: {
+                            withAnimation {
+                                isCalendarVisible.toggle()
+                            }
+                        }) {
+                            HStack {
+                                Image(systemName: "calendar.circle")
+                                    .font(.system(size: isSmallDevice() ? 20 : 24))
+                                Text(" \(formattedDate(selectedDate))")
+                                    .font(.system(size: 20))
+                                    .padding(.leading, -8)
+                            }
+                            .padding(5)
+                            .padding(.horizontal,5)
+                            .foregroundColor(.gray)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(Color.gray, lineWidth: 1)
+                            )
+                        }
+                        
+                        Button(action: {
+                            selectedDate = Calendar.current.date(byAdding: .day, value: -1, to: selectedDate) ?? selectedDate
+                        }) {
+                            Text("前日")
+                        }
+                        .padding(5)
+//                        .padding(.horizontal,5)
+                        .foregroundColor(.gray)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.gray, lineWidth: 1)
+                        )
+                        
+                        Button(action: {
+                            selectedDate = Calendar.current.date(byAdding: .day, value: 1, to: selectedDate) ?? selectedDate
+                        }) {
+                            Text("翌日")
+                        }
+                        .padding(5)
+//                        .padding(.horizontal,5)
+                        .foregroundColor(.gray)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.gray, lineWidth: 1)
+                        )
+                    }
+                    // カレンダー（日付ピッカー）の表示
+                    if isCalendarVisible {
+                        DatePicker("期限日を選択", selection: $selectedDate, displayedComponents: [.date])
+                            .datePickerStyle(GraphicalDatePickerStyle())
+                            .transition(.slide)
+                    }
+                }
+                
+                Button(action: {
+                    let trimmedTitle = text.trimmingCharacters(in: .whitespaces)
+                    guard !trimmedTitle.isEmpty else { return }
+                    todoViewModel.addItem(title: trimmedTitle, dueDate: selectedDate)
+                    text = ""
+                    presentationMode.wrappedValue.dismiss()
+                }) {
+                    Text("追加")
+                        .fontWeight(.bold)
+                        .frame(maxWidth:.infinity)
+                        .padding()
+                        .background(Color.black)
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                }
+                .padding(.top)
+                .shadow(radius: 1)
             }
-            .shadow(radius: 1)
+            .padding()
         }
-        .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
+    
+    func formattedDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ja_JP") // ロケールを日本に設定
+        formatter.dateFormat = "yyyy年M月d日(E)" // カスタムフォーマット
+        return formatter.string(from: date)
+    }
+    
+    func isSmallDevice() -> Bool {
+        return UIScreen.main.bounds.width < 390
+    }
 }
+
 
 struct CalendarView: View {
     @ObservedObject var todoViewModel: TodoViewModel
@@ -324,14 +423,16 @@ struct CalendarView: View {
                     Image(systemName: "chevron.right")
                         .padding()
                 }
-            }
+            }.foregroundColor(.black)
             
             // Weekday Labels
-            let days = Calendar.current.shortWeekdaySymbols
+            let japaneseWeekdays = ["日", "月", "火", "水", "木", "金", "土"]
             HStack {
-                ForEach(days, id: \.self) { day in
+                ForEach(japaneseWeekdays, id: \.self) { day in
                     Text(day)
                         .frame(maxWidth: .infinity)
+                        .fontWeight(.bold)
+                        .foregroundColor(.black)
                 }
             }
             
@@ -376,54 +477,60 @@ struct CalendarView: View {
             
             // Selected Date's Todo List
             if let selectedDate = selectedDate {
-                Divider()
-                Text("選択された日: \(fullDateFormatter.string(from: selectedDate))")
-                    .font(.headline)
-                    .padding(.top)
+                HStack {
+                    Image(systemName: "calendar.circle")
+                        .font(.system(size: 20))
+                    Text("\(formattedDate(selectedDate))")
+                        .font(.headline)
+                    Spacer()
+                }
+                .padding(.leading)
                 
-                List {
-                    let filteredTodos = todoViewModel.items.filter { Calendar.current.isDate($0.dueDate, inSameDayAs: selectedDate) }
-                    if filteredTodos.isEmpty {
-                        Text("この日にTodoはありません")
-                            .foregroundColor(.gray)
-                    } else {
-                        ForEach(filteredTodos) { item in
-                            HStack {
-                                Image(systemName: item.isCompleted ? "checkmark.circle.fill" : "circle")
-                                    .onTapGesture {
-                                        todoViewModel.toggleCompletion(of: item)
-                                    }
-                                VStack(alignment: .leading) {
-                                    Text(item.title)
-                                        .strikethrough(item.isCompleted, color: .black)
-                                        .foregroundColor(item.isCompleted ? .gray : .black)
-                                    Text("期限: \(formattedDate(item.dueDate))")
-                                        .font(.subheadline)
-                                        .foregroundColor(.gray)
+                let filteredTodos = todoViewModel.items.filter { Calendar.current.isDate($0.dueDate, inSameDayAs: selectedDate) }
+                
+                if filteredTodos.isEmpty {
+                    Text("この日にTodoはありません")
+                        .foregroundColor(.gray)
+                        .padding()
+                } else {
+                    ForEach(filteredTodos) { item in
+                        HStack {
+                            Image(systemName: item.isCompleted ? "checkmark.circle.fill" : "circle")
+                                .foregroundColor(item.isCompleted ? .green : .gray)
+                                .onTapGesture {
+                                    todoViewModel.toggleCompletion(of: item)
                                 }
+                            VStack(alignment: .leading) {
+                                Text(item.title)
+                                    .font(.system(size: 18))
+                                    .strikethrough(item.isCompleted, color: .black)
+                                    .foregroundColor(item.isCompleted ? .gray : .black)
+                                Text("期限: \(formattedDate(item.dueDate))")
+                                    .font(.subheadline)
+                                    .foregroundColor(.gray)
                             }
+                            Spacer()
                         }
-                        .onDelete { indices in
-                            let todosToRemove = indices.map { filteredTodos[$0] }
-                            for todo in todosToRemove {
-                                if let index = todoViewModel.items.firstIndex(where: { $0.id == todo.id }) {
-                                    todoViewModel.removeItems(at: IndexSet(integer: index))
-                                }
-                            }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .contentShape(Rectangle()) // ここを追加
+                        .onTapGesture {
+                            todoViewModel.toggleCompletion(of: item)
                         }
+                        Divider()
                     }
                 }
             }
             
             Spacer()
         }
-        .navigationTitle("カレンダー")
     }
     
     // Month and Year Formatter
     private var monthYearFormatter: DateFormatter {
         let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy年 MMMM"
+        formatter.locale = Locale(identifier: "ja_JP") // ロケールを日本に設定
+        formatter.dateFormat = "yyyy年M月" // 月を数字で表示
         return formatter
     }
     
@@ -431,13 +538,15 @@ struct CalendarView: View {
     private var fullDateFormatter: DateFormatter {
         let formatter = DateFormatter()
         formatter.dateStyle = .full
+        formatter.locale = Locale(identifier: "ja_JP") // ロケールを日本に設定
         return formatter
     }
     
     // Date Formatter for Todo Items
-    private func formattedDate(_ date: Date) -> String {
+    func formattedDate(_ date: Date) -> String {
         let formatter = DateFormatter()
-        formatter.dateStyle = .medium
+        formatter.locale = Locale(identifier: "ja_JP") // ロケールを日本に設定
+        formatter.dateFormat = "yyyy年M月d日(E)" // カスタムフォーマット
         return formatter.string(from: date)
     }
     
@@ -465,5 +574,7 @@ struct CalendarView: View {
 
 
 #Preview {
+//    CalendarView(todoViewModel: TodoViewModel(userID: AuthManager().currentUserId!))
     ContentView()
+//    AddPostView(text: .constant("test"), todoViewModel: TodoViewModel(userID: AuthManager().currentUserId!))
 }
