@@ -8,7 +8,6 @@
 import SwiftUI
 import Firebase
 
-// MARK: - TodoItem Model
 struct TodoItem: Identifiable, Codable, Equatable {
     let id: String
     var title: String
@@ -61,7 +60,6 @@ class TodoViewModel: ObservableObject {
         handle = ref.observe(.value, with: { [weak self] snapshot in
             guard let self = self else { return }
             var newItems: [TodoItem] = []
-            print("Snapshot received")
             
             for child in snapshot.children {
                 if let childSnapshot = child as? DataSnapshot,
@@ -98,12 +96,9 @@ class TodoViewModel: ObservableObject {
                         let item = TodoItem(id: childSnapshot.key, title: title, isCompleted: isCompleted, dueDate: dueDate, order: order)
                         
                         newItems.append(item)
-                        print("newItems1 (after append): \(newItems)")
                     } else {
-                        print("Invalid dueDate format for child: \(childSnapshot.key)")
                     }
                 } else {
-                    print("Failed to parse child: \(child)")
                 }
             }
             
@@ -111,8 +106,6 @@ class TodoViewModel: ObservableObject {
             newItems.sort { $0.order < $1.order }
             
             DispatchQueue.main.async {
-                print("DispatchQueue.main.async block is executing")
-                print("newItems2 :\(newItems)")
                 self.items = newItems
             }
         })

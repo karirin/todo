@@ -7,11 +7,12 @@
 
 import SwiftUI
 
-// MARK: - TodoRowView
 struct TodoRowView: View {
     let item: TodoItem
     @Binding var draggingItem: TodoItem?
     @Binding var dragOffset: CGSize
+    @Binding var isCustomizationMode: Bool
+    @Binding var activeSheet: ActiveSheet?
     @ObservedObject var todoViewModel: TodoViewModel
     @State private var showingAlert = false
     @State private var isDragging: Bool = false
@@ -23,7 +24,11 @@ struct TodoRowView: View {
             Image(systemName: item.isCompleted ? "checkmark.circle.fill" : "circle")
                 .foregroundColor(item.isCompleted ? .green : .gray)
                 .onTapGesture {
-                    todoViewModel.toggleCompletion(of: item)
+                    if isCustomizationMode {
+                        activeSheet = .postListEditor
+                    } else {
+                        todoViewModel.toggleCompletion(of: item)
+                    }
                 }
                 .padding(.trailing, 10)
             
@@ -49,10 +54,18 @@ struct TodoRowView: View {
             .frame(maxWidth: .infinity)
             .contentShape(Rectangle())
             .onTapGesture {
-                todoViewModel.toggleCompletion(of: item)
+                if isCustomizationMode {
+                    activeSheet = .postListEditor
+                } else {
+                    todoViewModel.toggleCompletion(of: item)
+                }
             }
             Button(action: {
-                showingAlert = true
+                if isCustomizationMode {
+                    activeSheet = .postListEditor
+                } else {
+                    showingAlert = true
+                }
             }) {
                 Image(systemName: "trash")
                     .foregroundColor(.red)
@@ -77,6 +90,11 @@ struct TodoRowView: View {
             isDragging ? Color.blue.opacity(0.2) : Color.white
         )
         .cornerRadius(8)
+        .onTapGesture {
+            if isCustomizationMode {
+                activeSheet = .postListEditor
+            }
+        }
         .shadow(color: isDragging ? Color.blue.opacity(0.5) : Color.gray.opacity(0.2), radius: 5, x: 0, y: isDragging ? 5 : 0)
         .offset(draggingItem?.id == item.id ? dragOffset : .zero)
         .opacity(draggingItem?.id == item.id ? 0.7 : 1.0)
@@ -86,18 +104,18 @@ struct TodoRowView: View {
             self.isDragging = newValue?.id == item.id
         }
         .alert(isPresented: Binding<Bool>(
-             get: { self.showingAlert },
-             set: { _ in }
-         )) {
-             Alert(
-                 title: Text("削除確認"),
-                 message: Text("このTodoを削除してもよろしいですか？"),
-                 primaryButton: .destructive(Text("削除")) {
-                     todoViewModel.removeItem(item)
-                 },
-                 secondaryButton: .cancel()
-             )
-         }
+            get: { self.showingAlert },
+            set: { _ in }
+        )) {
+            Alert(
+                title: Text("削除確認"),
+                message: Text("このTodoを削除してもよろしいですか？"),
+                primaryButton: .destructive(Text("削除")) {
+                    todoViewModel.removeItem(item)
+                },
+                secondaryButton: .cancel()
+            )
+        }
     }
     
     func formattedDate(_ date: Date) -> String {
@@ -108,79 +126,153 @@ struct TodoRowView: View {
     }
 }
 
-// MARK: - TodoListView
+enum ActiveSheet: Identifiable {
+    case addPost
+    case backgroundEditor
+    case headerEditor
+    case plusButtonEditor
+    case postListEditor
+    
+    var id: Int {
+        hashValue
+    }
+}
+
 struct TodoListView: View {
     @ObservedObject var todoViewModel: TodoViewModel
     @ObservedObject var userSettingsViewModel: UserSettingsViewModel
     @State private var newTodoTitle: String = ""
     @State private var postFlag = false
-    
-    // ドラッグ中のアイテム
+    @State private var isCustomizationMode: Bool = false
+    @State private var showBackgroundEditor: Bool = false
     @State private var draggingItem: TodoItem?
-    // ドラッグ中の位置
     @State private var dragOffset: CGSize = .zero
+    @State private var activeSheet: ActiveSheet?
     
     var body: some View {
         ZStack {
-            userSettingsViewModel.backgroundColor // 背景色を適用
-                .ignoresSafeArea()
-                .onAppear{
-                    print("userSettingsViewModel.settings.backgroundColor:\(userSettingsViewModel.settings.backgroundColor)")
-                }
+            if let imageName = userSettingsViewModel.backgroundImageName,
+               let uiImage = UIImage(named: imageName) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .edgesIgnoringSafeArea(.all)
+            } else {
+                userSettingsViewModel.backgroundColor
+                    .ignoresSafeArea()
+            }
             VStack {
                 HStack {
                     Spacer()
                     Text("TODO一覧")
                         .font(.system(size: 20))
                     Spacer()
+                    Button(action: {
+                        isCustomizationMode.toggle()
+                    }) {
+                        Image(systemName: isCustomizationMode ? "pencil.circle.fill" : "pencil.circle")
+                            .font(.title)
+                            .foregroundColor(isCustomizationMode ? .red : .white)
+                            .zIndex(isCustomizationMode ? 1 : 0)
+                    }
+                    .padding(.trailing, 10)
                 }
                 .frame(maxWidth: .infinity, maxHeight: 60)
+                .background(
+                    Image("ヘッダー") // 追加した画像の名前
+                        .resizable()
+                        .edgesIgnoringSafeArea(.all)
+                )
                 .background(Color.gray)
                 .foregroundColor(Color.white)
-                
-                ScrollView {
-                    VStack(spacing: 10) {
-                        ForEach(todoViewModel.items) { item in
+                .onTapGesture {
+                    if isCustomizationMode {
+                        activeSheet = .headerEditor
+                    }
+                }
+                VStack(spacing: 10) {
+                    ForEach(todoViewModel.items) { item in
+                        ZStack{
                             TodoRowView(
                                 item: item,
                                 draggingItem: $draggingItem,
-                                dragOffset: $dragOffset,
+                                dragOffset: $dragOffset, isCustomizationMode: $isCustomizationMode, activeSheet: $activeSheet,
                                 todoViewModel: todoViewModel
                             )
                         }
+                        .onTapGesture {
+                            if isCustomizationMode {
+                                activeSheet = .postListEditor
+                            }
+                        }
                     }
-                    .padding()
                 }
+                .padding()
                 
-                Spacer()
+                Color.clear
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        if isCustomizationMode {
+                            activeSheet = .backgroundEditor
+                        }
+                    }
             }
-            VStack {
+            //        }
+            
+        }
+        .overlay(
+            ZStack {
                 Spacer()
                 HStack {
-                    Spacer()
-                    Button(action: {
-                        postFlag = true
-                        guard !newTodoTitle.trimmingCharacters(in: .whitespaces).isEmpty else { return }
-                    }) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 30))
-                            .padding(20)
-                            .background(Color.black)
-                            .foregroundColor(Color.white)
-                            .clipShape(Circle())
+                    VStack{
+                        Spacer()
+                        HStack {
+                            Spacer()
+                            Button(action: {
+                                if isCustomizationMode {
+                                    activeSheet = .plusButtonEditor
+                                } else {
+                                    activeSheet = .addPost
+                                    guard !newTodoTitle.trimmingCharacters(in: .whitespaces).isEmpty else { return }
+                                }
+                            }) {
+                                Image(systemName: "plus")
+                                    .font(.system(size: 30))
+                                    .padding(20)
+                                    .background(Color.black)
+                                    .foregroundColor(Color.white)
+                                    .clipShape(Circle())
+                            }
+                            .shadow(radius: 3)
+                            .padding()
+                        }
                     }
-                    .shadow(radius: 3)
-                    .padding()
                 }
             }
+        )
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .sheet(item: $activeSheet) { item in
+            switch item {
+            case .addPost:
+                AddPostView(text: $newTodoTitle, todoViewModel: todoViewModel)
+                    .presentationDetents([.large,
+                                          .height(280),
+                                          .fraction(isSmallDevice() ? 0.65 : 0.55)
+                    ])
+            case .backgroundEditor:
+                BackgroundImageView(userSettingsViewModel: userSettingsViewModel)
+                    .presentationDetents([.large])
+            case .headerEditor:
+                HeaderEditorView(userSettingsViewModel: userSettingsViewModel)
+                    .presentationDetents([.large])
+            case .plusButtonEditor:
+                PlusButtonEditorView(userSettingsViewModel: userSettingsViewModel)
+                    .presentationDetents([.large])
+            case .postListEditor:
+                PostListEditorView(todoViewModel: todoViewModel)
+                    .presentationDetents([.large])
+            }
         }
-        .sheet(isPresented: $postFlag) {
-            AddPostView(text: $newTodoTitle, todoViewModel: todoViewModel)
-                .presentationDetents([.large,
-                                      .height(280),
-                                      .fraction(isSmallDevice() ? 0.65 : 0.55)
-                ])
-        }
+        
         .gesture(
             DragGesture()
                 .onChanged { value in
@@ -214,6 +306,74 @@ struct TodoListView: View {
     }
 }
 
+struct HeaderEditorView: View {
+    @ObservedObject var userSettingsViewModel: UserSettingsViewModel
+    @Environment(\.presentationMode) var presentationMode
+    @State private var headerText: String = ""
+    
+    var body: some View {
+        NavigationView {
+            Form {
+                Section(header: Text("ヘッダーの編集")) {
+                    TextField("ヘッダーのタイトル", text: $headerText)
+                }
+            }
+            .navigationBarTitle("ヘッダー編集", displayMode: .inline)
+            .navigationBarItems(trailing: Button("完了") {
+                //                userSettingsViewModel.updateHeaderText(headerText)
+                presentationMode.wrappedValue.dismiss()
+            })
+            .onAppear {
+                //                self.headerText = userSettingsViewModel.headerText
+            }
+        }
+    }
+}
+
+struct PlusButtonEditorView: View {
+    @ObservedObject var userSettingsViewModel: UserSettingsViewModel
+    @Environment(\.presentationMode) var presentationMode
+    @State private var buttonColor: Color = .black
+    
+    var body: some View {
+        NavigationView {
+            Form {
+                Section(header: Text("プラスボタンの編集")) {
+                    ColorPicker("ボタンの色", selection: $buttonColor)
+                }
+            }
+            .navigationBarTitle("プラスボタン編集", displayMode: .inline)
+            .navigationBarItems(trailing: Button("完了") {
+                //                userSettingsViewModel.updatePlusButtonColor(buttonColor)
+                presentationMode.wrappedValue.dismiss()
+            })
+            .onAppear {
+                //                self.buttonColor = userSettingsViewModel.plusButtonColor
+            }
+        }
+    }
+}
+
+struct PostListEditorView: View {
+    @ObservedObject var todoViewModel: TodoViewModel
+    @Environment(\.presentationMode) var presentationMode
+    
+    var body: some View {
+        NavigationView {
+            Form {
+                Section(header: Text("投稿一覧の編集")) {
+                    // 例: 並び替えオプションやフィルタリングオプションを追加
+                    //                    Toggle("並び替えを有効にする", isOn: $todoViewModel.isReorderEnabled)
+                    // 他のオプションを追加
+                }
+            }
+            .navigationBarTitle("投稿一覧編集", displayMode: .inline)
+            .navigationBarItems(trailing: Button("完了") {
+                presentationMode.wrappedValue.dismiss()
+            })
+        }
+    }
+}
 
 #Preview {
     TodoListView(todoViewModel: TodoViewModel(userID: AuthManager().currentUserId!), userSettingsViewModel: UserSettingsViewModel(userID: AuthManager().currentUserId!))

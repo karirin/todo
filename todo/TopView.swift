@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-// MARK: - MainView
 struct TopView: View {
     @StateObject var todoViewModel: TodoViewModel
     @StateObject var userSettingsViewModel: UserSettingsViewModel
@@ -18,24 +17,21 @@ struct TopView: View {
     }
 
     var body: some View {
-        ZStack {
+        TabView {
+            TodoListView(todoViewModel: todoViewModel, userSettingsViewModel: userSettingsViewModel)
+                .tabItem {
+                    Label("Todo", systemImage: "checkmark.circle")
+                }
             
-            TabView {
-                TodoListView(todoViewModel: todoViewModel, userSettingsViewModel: userSettingsViewModel)
-                    .tabItem {
-                        Label("Todo", systemImage: "checkmark.circle")
-                    }
-                
-                CalendarView(todoViewModel: todoViewModel)
-                    .tabItem {
-                        Label("Calendar", systemImage: "calendar")
-                    }
-                
-                ColorPickerView(userSettingsViewModel: userSettingsViewModel)
-                    .tabItem {
-                        Label("Settings", systemImage: "gear")
-                    }
-            }
+            CalendarView(todoViewModel: todoViewModel)
+                .tabItem {
+                    Label("Calendar", systemImage: "calendar")
+                }
+            
+            SettingsView(userSettingsViewModel: userSettingsViewModel)
+                .tabItem {
+                    Label("Settings", systemImage: "gear")
+                }
         }
     }
 }

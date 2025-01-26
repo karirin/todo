@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-// MARK: - AddPostView
 struct AddPostView: View {
     @Binding var text: String
     @ObservedObject var todoViewModel: TodoViewModel
@@ -71,7 +70,7 @@ struct AddPostView: View {
                         }) {
                             Text("前日")
                         }
-                        .padding(5)
+                        .padding(8)
                         .foregroundColor(.gray)
                         .overlay(
                             RoundedRectangle(cornerRadius: 10)
@@ -83,7 +82,7 @@ struct AddPostView: View {
                         }) {
                             Text("翌日")
                         }
-                        .padding(5)
+                        .padding(8)
                         .foregroundColor(.gray)
                         .overlay(
                             RoundedRectangle(cornerRadius: 10)
@@ -109,12 +108,12 @@ struct AddPostView: View {
                         .fontWeight(.bold)
                         .frame(maxWidth:.infinity)
                         .padding()
-                        .background(Color.black)
-                        .foregroundColor(.white)
+                        .background(Color.white)
+                        .foregroundColor(.black)
                         .cornerRadius(8)
                 }
-                .padding(.top)
-                .shadow(radius: 1)
+                .padding(.top, 10)
+                .shadow(radius: 3)
             }
             .padding()
         }
