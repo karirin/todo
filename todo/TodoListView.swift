@@ -163,8 +163,9 @@ struct TodoListView: View {
             VStack {
                 HStack {
                     Spacer()
-                    Text("TODO一覧")
+                    Text(userSettingsViewModel.headerText)
                         .font(.system(size: 20))
+                        .foregroundColor(userSettingsViewModel.headerTextColor)
                     Spacer()
                     Button(action: {
                         isCustomizationMode.toggle()
@@ -178,11 +179,18 @@ struct TodoListView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: 60)
                 .background(
-                    Image("ヘッダー") // 追加した画像の名前
-                        .resizable()
-                        .edgesIgnoringSafeArea(.all)
+                    Group {
+                        if let headerImageName = userSettingsViewModel.headerImageName,
+                           let uiImage = UIImage(named: headerImageName) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .edgesIgnoringSafeArea(.all)
+                        } else {
+                            userSettingsViewModel.headerColor
+                                .edgesIgnoringSafeArea(.all)
+                        }
+                    }
                 )
-                .background(Color.gray)
                 .foregroundColor(Color.white)
                 .onTapGesture {
                     if isCustomizationMode {
@@ -207,7 +215,6 @@ struct TodoListView: View {
                     }
                 }
                 .padding()
-                
                 Color.clear
                     .contentShape(Rectangle())
                     .onTapGesture {
@@ -303,30 +310,6 @@ struct TodoListView: View {
     
     func isSmallDevice() -> Bool {
         return UIScreen.main.bounds.width < 390
-    }
-}
-
-struct HeaderEditorView: View {
-    @ObservedObject var userSettingsViewModel: UserSettingsViewModel
-    @Environment(\.presentationMode) var presentationMode
-    @State private var headerText: String = ""
-    
-    var body: some View {
-        NavigationView {
-            Form {
-                Section(header: Text("ヘッダーの編集")) {
-                    TextField("ヘッダーのタイトル", text: $headerText)
-                }
-            }
-            .navigationBarTitle("ヘッダー編集", displayMode: .inline)
-            .navigationBarItems(trailing: Button("完了") {
-                //                userSettingsViewModel.updateHeaderText(headerText)
-                presentationMode.wrappedValue.dismiss()
-            })
-            .onAppear {
-                //                self.headerText = userSettingsViewModel.headerText
-            }
-        }
     }
 }
 

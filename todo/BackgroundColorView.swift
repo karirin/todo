@@ -121,7 +121,7 @@ struct BackgroundColorView: View {
                         selectedHex: selectedColorHex
                     ) {
                         // まず背景画像をクリア
-                        if userSettingsViewModel.settings.backgroundImageName != nil {
+                        if userSettingsViewModel.backgroundImageName != nil {
                             userSettingsViewModel.clearBackgroundImage()
                         }
                         
@@ -143,7 +143,7 @@ struct BackgroundColorView: View {
                     .onChange(of: pickedColor) { newColor in
                         if let hex = newColor.toHex() {
                             // まず背景画像をクリア
-                            if userSettingsViewModel.settings.backgroundImageName != nil {
+                            if userSettingsViewModel.backgroundImageName != nil {
                                 userSettingsViewModel.clearBackgroundImage()
                             }
                             
@@ -160,7 +160,7 @@ struct BackgroundColorView: View {
         .padding()
         .onAppear {
             // 現在の背景色のHexコードを選択状態に反映
-            selectedColorHex = userSettingsViewModel.settings.backgroundColor
+//            selectedColorHex = userSettingsViewModel.settings.backgroundColor
             pickedColor = Color(hex: selectedColorHex)
         }
     }

@@ -18,9 +18,7 @@ struct AddPostView: View {
         ScrollView { // スクロールビューを追加して、キーボード表示時のレイアウト崩れを防ぐ
             VStack(spacing: 10) {
                 HStack {
-                    Rectangle()
-                        .frame(width:5, height: 20)
-                        .foregroundColor(Color.black)
+                    Spacer()
                     Text("ToDoを追加する")
                         .font(.headline)
                     Spacer()
@@ -35,9 +33,7 @@ struct AddPostView: View {
                 // 日付選択用のボタン群
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
-                        Rectangle()
-                            .frame(width:5, height: 20)
-                            .foregroundColor(Color.black)
+                        Spacer()
                         Text("ToDo実施日")
                             .font(.headline)
                         Spacer()

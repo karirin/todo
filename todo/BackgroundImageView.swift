@@ -27,7 +27,7 @@ struct BackgroundImageView: View {
         "水1", "水2", "水3", "水4", "水5", "水6", "水7", "水8", "水9", "水10",
         "薄水1", "薄水2", "薄水3", "薄水4", "薄水5", "薄水6", "薄水7", "薄水8", "薄水9", "薄水10",
         "黄1", "黄2", "黄3", "黄4", "黄5", "黄6", "黄7", "黄8", "黄9", "黄10",
-        "黄緑1", "黄緑2", "黄緑3", "黄緑4", "黄緑5", "黄緑6", "黄緑7", "黄緑8", "黄緑9", "黄緑10",
+        "薄緑1", "薄緑2", "薄緑3", "薄緑4", "薄緑5", "薄緑6", "薄緑7", "薄緑8", "薄緑9", "薄緑10",
         "緑1", "緑2", "緑3", "緑4", "緑5", "緑6", "緑7", "緑8", "緑9", "緑10",
         "赤1", "赤2", "赤3", "赤4", "赤5", "赤6", "赤7", "赤8", "赤9", "赤10",
         "橙1", "橙2", "橙3", "橙4", "橙5", "橙6", "橙7", "橙8", "橙9", "橙10",
@@ -75,7 +75,7 @@ struct BackgroundImageView: View {
                         )
                     }.opacity(0)
                     Spacer()
-                    Text("背景画像を選択")
+                    Text("背景を選択")
                         .font(.headline)
                     Spacer()
                     Button(action: {
@@ -137,7 +137,7 @@ struct BackgroundImageView: View {
                                 .clipped()
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 10)
-                                        .stroke(userSettingsViewModel.settings.backgroundImageName == imageName ? Color.black : Color.clear, lineWidth: 4)
+                                        .stroke(userSettingsViewModel.backgroundImageName == imageName ? Color.black : Color.clear, lineWidth: 4)
                                 )
                         }
                     }
@@ -150,7 +150,7 @@ struct BackgroundImageView: View {
         }
         .onAppear {
             // 現在の背景色のHexコードを選択状態に反映
-            selectedColor = Color(hex: userSettingsViewModel.settings.backgroundColor)
+//            selectedColor = Color(hex: userSettingsViewModel.settings.backgroundColor)
             if let category = closestColorCategory(to: selectedColor) {
                 filteredImageNames = predefinedBackgroundImageNames.filter { $0.hasPrefix(category.name) }
             } else {
