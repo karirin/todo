@@ -162,9 +162,20 @@ struct TodoListView: View {
             }
             VStack {
                 HStack {
+                    Button(action: {
+                        isCustomizationMode.toggle()
+                    }) {
+                        Image(systemName: isCustomizationMode ? "pencil.circle.fill" : "pencil.circle")
+                            .font(.title)
+                            .foregroundColor(isCustomizationMode ? .red : .white)
+                            .zIndex(isCustomizationMode ? 1 : 0)
+                    }
+                    .padding(.leading)
+                    .opacity(0)
                     Spacer()
                     Text(userSettingsViewModel.headerText)
                         .font(.system(size: 20))
+                        .fontWeight(.bold)
                         .foregroundColor(userSettingsViewModel.headerTextColor)
                     Spacer()
                     Button(action: {
@@ -175,7 +186,7 @@ struct TodoListView: View {
                             .foregroundColor(isCustomizationMode ? .red : .white)
                             .zIndex(isCustomizationMode ? 1 : 0)
                     }
-                    .padding(.trailing, 10)
+                    .padding(.trailing)
                 }
                 .frame(maxWidth: .infinity, maxHeight: 60)
                 .background(
@@ -194,6 +205,7 @@ struct TodoListView: View {
                 .foregroundColor(Color.white)
                 .onTapGesture {
                     if isCustomizationMode {
+                        print("headerEditor")
                         activeSheet = .headerEditor
                     }
                 }

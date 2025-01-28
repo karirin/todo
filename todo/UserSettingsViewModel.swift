@@ -140,11 +140,13 @@ class UserSettingsViewModel: ObservableObject {
                 // ヘッダー設定
                 if let headerDict = dict["header"] as? [String: Any],
                    let headerColor = headerDict["headerColor"] as? String,
-                   let headerText = headerDict["headerText"] as? String {
+                   let headerText = headerDict["headerText"] as? String,
+                   let headerTextColorHex = headerDict["headerTextColor"] as? String {
                     DispatchQueue.main.async {
                         self.settings.header.headerColor = headerColor
                         self.headerColor = Color(hex: headerColor)
                         self.headerText = headerText
+                        self.headerTextColor = Color(hex: headerTextColorHex)
                     }
                 }
                 if let headerImageName = (dict["header"] as? [String: Any])?["headerImageName"] as? String {
