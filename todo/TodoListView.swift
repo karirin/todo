@@ -287,7 +287,7 @@ struct TodoListView: View {
                 PlusButtonEditorView(userSettingsViewModel: userSettingsViewModel)
                     .presentationDetents([.large])
             case .postListEditor:
-                PostListEditorView(todoViewModel: todoViewModel)
+                PostListEditorView(todoViewModel: todoViewModel, userSettingsViewModel: userSettingsViewModel)
                     .presentationDetents([.large])
             }
         }
@@ -345,27 +345,6 @@ struct PlusButtonEditorView: View {
             .onAppear {
                 //                self.buttonColor = userSettingsViewModel.plusButtonColor
             }
-        }
-    }
-}
-
-struct PostListEditorView: View {
-    @ObservedObject var todoViewModel: TodoViewModel
-    @Environment(\.presentationMode) var presentationMode
-    
-    var body: some View {
-        NavigationView {
-            Form {
-                Section(header: Text("投稿一覧の編集")) {
-                    // 例: 並び替えオプションやフィルタリングオプションを追加
-                    //                    Toggle("並び替えを有効にする", isOn: $todoViewModel.isReorderEnabled)
-                    // 他のオプションを追加
-                }
-            }
-            .navigationBarTitle("投稿一覧編集", displayMode: .inline)
-            .navigationBarItems(trailing: Button("完了") {
-                presentationMode.wrappedValue.dismiss()
-            })
         }
     }
 }
