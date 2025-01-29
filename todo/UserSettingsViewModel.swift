@@ -29,6 +29,7 @@ struct ButtonSettings: Codable {
 struct PostListSettings: Codable {
     var postListColor: String // Hex string
     var postListImageName: String? // Optional: Image name from assets
+    var postListTextColor: String // Hex string
     var isReorderEnabled: Bool // 並び替え機能の有効化
 }
 
@@ -43,7 +44,7 @@ struct UserSettings: Codable {
         background: BackgroundSettings = BackgroundSettings(backgroundColor: "#FFFFFF", backgroundImageName: nil),
         header: HeaderSettings = HeaderSettings(headerColor: "#FFFFFF", headerImageName: nil, headerText: "TODO一覧", headerTextColor: "#000000"),
         button: ButtonSettings = ButtonSettings(buttonColor: "#FFFFFF", buttonImageName: nil),
-        postList: PostListSettings = PostListSettings(postListColor: "#FFFFFF", postListImageName: nil, isReorderEnabled: true)
+        postList: PostListSettings = PostListSettings(postListColor: "#FFFFFF", postListImageName: nil, postListTextColor: "#000000", isReorderEnabled: true)
     ) {
         self.background = background
         self.header = header
@@ -63,6 +64,7 @@ class UserSettingsViewModel: ObservableObject {
     @Published var buttonColor: Color = .white
     @Published var buttonImageName: String? = nil
     @Published var postListColor: Color = .white
+    @Published var postListTextColor: Color = .black
     @Published var postListImageName: String? = nil
     @Published var isReorderEnabled: Bool = true
     
@@ -71,8 +73,8 @@ class UserSettingsViewModel: ObservableObject {
     private var userID: String
     
     init(userID: String, mockSettings: UserSettings? = nil) {
-        self.userID = userID // userID を初期化
-        self.ref = Database.database().reference().child("users").child(userID).child("settings") // Firebase のパスを修正
+        self.userID = userID
+        self.ref = Database.database().reference().child("users").child(userID).child("settings")
         if let mock = mockSettings {
             self.settings = mock
             self.backgroundColor = Color(hex: mock.background.backgroundColor)
@@ -80,12 +82,13 @@ class UserSettingsViewModel: ObservableObject {
             self.headerColor = Color(hex: mock.header.headerColor)
             self.headerImageName = mock.header.headerImageName
             self.headerText = mock.header.headerText
-            self.headerTextColor = Color(hex: mock.header.headerTextColor) // 新規追加
+            self.headerTextColor = Color(hex: mock.header.headerTextColor)
             self.buttonColor = Color(hex: mock.button.buttonColor)
             self.buttonImageName = mock.button.buttonImageName
             self.postListColor = Color(hex: mock.postList.postListColor)
             self.postListImageName = mock.postList.postListImageName
             self.isReorderEnabled = mock.postList.isReorderEnabled
+            self.postListTextColor = Color(hex: mock.postList.postListTextColor) // 新規追加
         } else {
             // 初期設定
             self.settings = UserSettings()
@@ -184,10 +187,12 @@ class UserSettingsViewModel: ObservableObject {
                 // 投稿一覧設定
                 if let postListDict = dict["postList"] as? [String: Any],
                    let postListColor = postListDict["postListColor"] as? String,
+                   let postListTextColor = postListDict["postListTextColor"] as? String,
                    let isReorder = postListDict["isReorderEnabled"] as? Bool {
                     DispatchQueue.main.async {
                         self.settings.postList.postListColor = postListColor
                         self.postListColor = Color(hex: postListColor)
+                        self.postListTextColor = Color(hex: postListTextColor)
                         self.isReorderEnabled = isReorder
                     }
                 }
@@ -211,11 +216,14 @@ class UserSettingsViewModel: ObservableObject {
                     self.headerColor = .white
                     self.headerImageName = nil
                     self.headerText = "TODO一覧"
+                    self.headerTextColor = .black
                     self.buttonColor = .white
                     self.buttonImageName = nil
                     self.postListColor = .white
                     self.postListImageName = nil
                     self.isReorderEnabled = true
+                    self.postListTextColor = .black
+                    print("設定が存在しないため、デフォルト値を適用")
                 }
             }
         })
@@ -422,6 +430,21 @@ class UserSettingsViewModel: ObservableObject {
                 print("Failed to update isReorderEnabled: \(error.localizedDescription)")
             } else {
                 print("Successfully updated isReorderEnabled to \(isEnabled)")
+            }
+        }
+    }
+    
+    func updateTodoTextColor(_ color: Color) {
+        guard let hexString = color.toHex() else {
+            return
+        }
+        settings.postList.postListTextColor = hexString
+        postListTextColor = color
+        ref.child("postList/postListTextColor").setValue(hexString) { error, _ in
+            if let error = error {
+                print("Failed to update todoTextColor: \(error.localizedDescription)")
+            } else {
+                print("Successfully updated todoTextColor to \(hexString)")
             }
         }
     }

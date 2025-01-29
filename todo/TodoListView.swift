@@ -17,6 +17,7 @@ struct TodoRowView: View {
     @State private var showingAlert = false
     @State private var isDragging: Bool = false
     @State private var originalOrder: Int = 0
+    @ObservedObject var userSettingsViewModel: UserSettingsViewModel
     
     var body: some View {
         HStack {
@@ -37,17 +38,17 @@ struct TodoRowView: View {
                 VStack(alignment: .leading){
                     Text(item.title)
                         .font(.system(size: 20))
+                        .fontWeight(.bold)
                         .strikethrough(item.isCompleted, color: .black)
-                        .foregroundColor(item.isCompleted ? .gray : .black)
+                        .foregroundColor(item.isCompleted ? .gray : userSettingsViewModel.postListTextColor)
                     HStack {
                         Image(systemName: "calendar.circle")
                             .font(.system(size: 16))
-                            .foregroundColor(.gray)
                             .padding(.trailing, -5)
                         Text("\(formattedDate(item.dueDate))")
                             .font(.system(size: 16))
-                            .foregroundColor(.gray)
                     }
+                    .foregroundColor(item.isCompleted ? .gray : userSettingsViewModel.postListTextColor)
                 }
                 Spacer()
             }
@@ -87,7 +88,18 @@ struct TodoRowView: View {
         }
         .padding()
         .background(
-            isDragging ? Color.blue.opacity(0.2) : Color.white
+//            isDragging ? Color.blue.opacity(0.2) : Color.white
+            Group {
+                if let headerImageName = userSettingsViewModel.postListImageName,
+                   let uiImage = UIImage(named: headerImageName) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .edgesIgnoringSafeArea(.all)
+                } else {
+                    userSettingsViewModel.postListColor
+                        .edgesIgnoringSafeArea(.all)
+                }
+            }
         )
         .cornerRadius(8)
         .onTapGesture {
@@ -216,7 +228,7 @@ struct TodoListView: View {
                                 item: item,
                                 draggingItem: $draggingItem,
                                 dragOffset: $dragOffset, isCustomizationMode: $isCustomizationMode, activeSheet: $activeSheet,
-                                todoViewModel: todoViewModel
+                                todoViewModel: todoViewModel, userSettingsViewModel: userSettingsViewModel
                             )
                         }
                         .onTapGesture {

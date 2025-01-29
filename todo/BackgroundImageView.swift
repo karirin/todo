@@ -148,6 +148,7 @@ struct BackgroundImageView: View {
             }
             .padding()
         }
+        .background(Color("backgroundColor"))
         .onAppear {
             // 現在の背景色のHexコードを選択状態に反映
 //            selectedColor = Color(hex: userSettingsViewModel.settings.backgroundColor)

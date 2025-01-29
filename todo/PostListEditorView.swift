@@ -12,6 +12,11 @@ struct PostListEditorView: View {
     @ObservedObject var userSettingsViewModel: UserSettingsViewModel
     @State private var selectedColor: Color = Color.white
     @Environment(\.presentationMode) var presentationMode
+    @State private var selectedTextColor: Color = .black
+    
+    let predefinedColors: [Color] = [
+        .white, .black, .gray, .red, .orange, .yellow, .green, .blue, .purple, .brown
+    ]
     
     let predefinedBackgroundImageNames: [String] = [
         "投稿一覧紫1", "投稿一覧紫2", "投稿一覧紫3", "投稿一覧紫4", "投稿一覧紫5", "投稿一覧紫6", "投稿一覧紫7", "投稿一覧紫8", "投稿一覧紫9", "投稿一覧紫10","投稿一覧紫11",
@@ -29,21 +34,6 @@ struct PostListEditorView: View {
         "投稿一覧白1", "投稿一覧白2", "投稿一覧白3", "投稿一覧白4", "投稿一覧白5", "投稿一覧白6", "投稿一覧白7", "投稿一覧白8", "投稿一覧白9", "投稿一覧白10","投稿一覧白11"
     ]
     
-    // 色選択用のHexコード
-    let predefinedColorHexes: [String] = [
-        "#FFC1C1", // Soft Red
-        "#FFD8B1", // Soft Orange
-        "#FFF5BA", // Soft Yellow
-        "#C1FFC1", // Soft Green
-        "#C1D4FF", // Soft Blue
-        "#D1C1FF", // Soft Indigo
-        "#E1C1FF", // Soft Purple
-        "#FFC1F1", // Soft Pink
-        "#E0E0E0", // Soft Gray
-        "#D2B48C", // Soft Brown
-        "#A1FFFF", // Soft Cyan
-        "#A1FFC1"  // Soft Teal
-    ]
     
     // 色カテゴリ
     let colorCategories: [ColorCategory] = [
@@ -64,235 +54,220 @@ struct PostListEditorView: View {
         ColorCategory(name: "白", color: Color(hex: "#FFFFFF")),    // White
     ]
     
-    // 選択された色のHexコード
-    @State private var selectedColorHex: String = "#FFFFFF"
-    
-    // 並び替え機能の有効化フラグ
-    @State private var isReorderEnabled: Bool = true
+    // 選択された色カテゴリ
+    @State private var selectedCategory: ColorCategory? = nil
     
     // フィルタリングされた画像名
     @State private var filteredImageNames: [String] = []
-    
-    // 選択された色カテゴリ
-    @State private var selectedCategory: ColorCategory? = nil
     
     // カラーカテゴリ選択シートの表示フラグ
     @State private var isColorSheetPresented: Bool = false
     
     var body: some View {
-//        NavigationView {
-//            ScrollView {
-                VStack(spacing: 20) {
-//                    // 投稿一覧の色変更セクション
-//                    VStack(alignment: .leading, spacing: 10) {
-//                        Text("投稿一覧の色")
-//                            .font(.headline)
-//                        ColorPicker("色を選択", selection: Binding(
-//                            get: {
-//                                userSettingsViewModel.postListColor
-//                            },
-//                            set: { newColor in
-//                                userSettingsViewModel.updatePostListColor(newColor)
-//                                if let hex = newColor.toHex() {
-//                                    selectedColorHex = hex
-//                                }
-//                            }
-//                        ))
-//                    }
-//                    .padding(.horizontal)
-                    
-                    // 投稿一覧の色プリセットセクション
-//                    VStack(alignment: .leading, spacing: 10) {
-//                        Text("プリセットカラーから選択")
-//                            .font(.headline)
-//                        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 20) {
-//                            ForEach(predefinedColorHexes, id: \.self) { hex in
-//                                ColorButton(
-//                                    hex: hex,
-//                                    selectedHex: selectedColorHex
-//                                ) {
-//                                    // 色を選択
-//                                    selectedColorHex = hex
-//                                    let selectedColor = Color(hex: hex)
-//                                    userSettingsViewModel.updatePostListColor(selectedColor)
-//                                }
-//                            }
-//                        }
-//                        .padding(.horizontal)
-//                    }
-                    
-                    // 投稿一覧の背景画像セクション
-                    VStack(alignment: .leading, spacing: 10) {
-                        HStack {Button(action: {
-                            isColorSheetPresented = true
-                        }) {
-                            HStack {
-                                Image(systemName: "paintpalette")
-                                    .padding(.trailing, -5)
-                                Text("色で探す")
-                            }
-                            .padding(5)
-                            .foregroundColor(.gray)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(Color.gray, lineWidth: 1)
-                            )
-                        }.opacity(0)
-                            Spacer()
-                            Text("投稿の背景画像")
-                                .font(.headline)
-                            Spacer()
-                            Button(action: {
-                                isColorSheetPresented = true
-                            }) {
-                                HStack {
-                                    Image(systemName: "paintpalette")
-                                        .padding(.trailing, -5)
-                                    Text("色で探す")
-                                }
-                                .padding(5)
-                                .foregroundColor(.gray)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .stroke(Color.gray, lineWidth: 1)
-                                )
-                            }
-                        }
-//                        .padding(.horizontal)
-                        
-                        // 背景画像のグリッド
-                        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 20) {
-                            
-                            // 背景無しボタン
-                            Button(action: {
-                                withAnimation {
-                                    userSettingsViewModel.clearPostListImage()
-                                    userSettingsViewModel.updatePostListColor(Color(hex: "#FFFFFF"))
-                                }
-                            }) {
-                                ZStack {
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .fill(Color(UIColor.secondarySystemBackground))
-                                        .frame(height: 40)
-                                    
-                                    VStack {
-                                        Text("背景無し")
-                                            .foregroundColor(.black)
-                                    }
-                                }
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .stroke(userSettingsViewModel.postListImageName == nil ? Color.black : Color.clear, lineWidth: 2)
-                                )
-                            }
-                            
-                            // フィルタリングされた背景画像ボタン
-                            ForEach(filteredImageNames, id: \.self) { imageName in
-                                Button(action: {
-                                    withAnimation {
-                                        userSettingsViewModel.updatePostListImage(named: imageName)
-                                        userSettingsViewModel.updatePostListColor(Color(hex: "#FFFFFF"))
-                                    }
-                                }) {
-                                    Image(imageName)
-                                        .resizable()
-                                        .scaledToFill()
-                                        .cornerRadius(10)
-                                        .clipped()
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .stroke(userSettingsViewModel.postListImageName == imageName ? Color.black : Color.clear, lineWidth: 2)
-                                        )
-                                }
-                            }
-                        }
-                        .padding()
-                    }
-                    
-                    Spacer()
-                }
-                .onAppear{
-                    if let category = closestColorCategory(to: userSettingsViewModel.postListColor) {
-                        print("predefinedBackgroundImageNames   :\(userSettingsViewModel.postListColor)")
-                        filteredImageNames = predefinedBackgroundImageNames.filter { $0.hasPrefix("投稿一覧" + category.name) }
-                        print("filteredImageNames1   :\(filteredImageNames)")
-                    } else {
-                        filteredImageNames = predefinedBackgroundImageNames
-                    }
-                }
-                .padding()
-//            }
-//            .navigationBarTitle("投稿一覧編集", displayMode: .inline)
-//            .navigationBarItems(trailing: Button("完了") {
-//                presentationMode.wrappedValue.dismiss()
-//            })
-            .sheet(isPresented: $isColorSheetPresented) {
-                VStack(spacing: 20) {
-                    Text("色を選択")
-                        .font(.headline)
-                        .padding(.top)
-                    
-                    HStack(spacing: 15) {
-                        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 20) {
-                            ForEach(colorCategories) { category in
-                                Button(action: {
-                                    withAnimation {
-                                        if selectedCategory?.name == category.name {
-                                            // 既に選択されている場合は選択解除
-                                            selectedCategory = nil
-                                            filteredImageNames = predefinedBackgroundImageNames
-                                        } else {
-                                            // 新しく選択
-                                            selectedCategory = category
-                                            filteredImageNames = predefinedBackgroundImageNames.filter { $0.hasPrefix("投稿一覧" + category.name) }
-                                        }
-                                        
-                                        // 背景画像をクリア
-                                        userSettingsViewModel.clearPostListImage()
-                                        
-                                        // 投稿一覧の色をデフォルトに戻す
-                                        userSettingsViewModel.updatePostListColor(Color(hex: "#FFFFFF"))
-                                        
-                                        // シートを閉じる
-                                        isColorSheetPresented = false
-                                    }
-                                }) {
-                                    ZStack {
-                                        Circle()
-                                            .fill(category.color)
-                                            .frame(width: 50, height: 50)
-                                            .overlay(
-                                                Circle()
-                                                    .stroke(selectedCategory?.name == category.name ? Color.black : Color.clear, lineWidth: 3)
-                                            )
-                                        
-                                        if selectedCategory?.name == category.name {
-                                            Image(systemName: "checkmark")
-                                                .foregroundColor(.white)
-                                                .font(.system(size: 20, weight: .bold))
-                                        }
-                                    }
-                                }
-                                .buttonStyle(PlainButtonStyle())
-                            }
-                        }
-                    }
-                    
-                    Spacer()
-                    
-                    // キャンセルボタン
+        VStack(spacing: 20) {
+            Text("文字色を選択")
+                .font(.headline)
+                .padding(.top)
+            
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 20) {
+                ForEach(predefinedColors, id: \.self) { color in
                     Button(action: {
-                        isColorSheetPresented = false
+                        selectedColor = color
+                        userSettingsViewModel.updateTodoTextColor(color)
+                        presentationMode.wrappedValue.dismiss()
+                        print("選択されたTodoテキスト色: \(color.toHex() ?? "N/A")")
                     }) {
-                        Text("キャンセル")
-                            .foregroundColor(.red)
-                            .padding()
+                        ZStack {
+                            Circle()
+                                .fill(color)
+                                .frame(width: 50, height: 50)
+                            
+                            if color == selectedColor {
+                                Image(systemName: "checkmark")
+                                    .foregroundColor(.white)
+                                    .font(.system(size: 20, weight: .bold))
+                            }
+                        }
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+            }
+            .padding(.horizontal)
+            // 投稿一覧の背景画像セクション
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    // 背景画像を色でフィルタリングするボタン
+                    Button(action: {
+                        isColorSheetPresented = true
+                    }) {
+                        HStack {
+                            Image(systemName: "paintpalette")
+                                .padding(.trailing, -5)
+                            Text("色で探す")
+                        }
+                        .padding(5)
+                        .foregroundColor(.gray)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.gray, lineWidth: 1)
+                        )
+                    }
+                    .opacity(0)
+                    Spacer()
+                    Text("投稿の背景画像")
+                        .font(.headline)
+                    Spacer()
+                    Button(action: {
+                        isColorSheetPresented = true
+                    }) {
+                        HStack {
+                            Image(systemName: "paintpalette")
+                                .padding(.trailing, -5)
+                            Text("色で探す")
+                        }
+                        .padding(5)
+                        .foregroundColor(.gray)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.gray, lineWidth: 1)
+                        )
+                    }
+                }
+                .padding(.horizontal)
+                
+                // 背景画像のグリッド
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
+                    
+                    // 背景無しボタン
+                    Button(action: {
+                        withAnimation {
+                            userSettingsViewModel.clearPostListImage()
+                            userSettingsViewModel.updatePostListColor(Color(hex: "#FFFFFF"))
+                            print("背景無しを選択")
+                        }
+                    }) {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(Color(UIColor.secondarySystemBackground))
+                                .frame(height: 40)
+                            
+                            VStack {
+                                Text("背景無し")
+                                    .foregroundColor(.black)
+                            }
+                        }
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(userSettingsViewModel.postListImageName == nil ? Color.black : Color.clear, lineWidth: 2)
+                        )
+                    }
+                    
+                    // フィルタリングされた背景画像ボタン
+                    ForEach(filteredImageNames, id: \.self) { imageName in
+                        Button(action: {
+                            withAnimation {
+                                userSettingsViewModel.updatePostListImage(named: imageName)
+                                userSettingsViewModel.updatePostListColor(Color(hex: "#FFFFFF"))
+                                print("背景画像を選択: \(imageName)")
+                            }
+                        }) {
+                            Image(imageName)
+                                .resizable()
+                                .scaledToFill()
+                                .cornerRadius(10)
+                                .clipped()
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(userSettingsViewModel.postListImageName == imageName ? Color.black : Color.clear, lineWidth: 2)
+                                )
+                        }
                     }
                 }
                 .padding()
             }
+            
+            Spacer()
         }
-    
+        .background(Color("backgroundColor"))
+        .onAppear{
+            // 投稿一覧色に基づいてフィルタリング
+            if let category = closestColorCategory(to: userSettingsViewModel.postListColor) {
+                print("選択された色カテゴリ: \(category.name)")
+                filteredImageNames = predefinedBackgroundImageNames.filter { $0.hasPrefix("投稿一覧" + category.name) }
+                print("フィルタリングされた画像名: \(filteredImageNames)")
+            } else {
+                filteredImageNames = predefinedBackgroundImageNames
+                print("色カテゴリが見つからなかったため、全ての画像を表示")
+            }
+        }
+        .sheet(isPresented: $isColorSheetPresented) {
+            VStack(spacing: 20) {
+                Text("色を選択")
+                    .font(.headline)
+                    .padding(.top)
+                
+                HStack(spacing: 15) {
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
+                        ForEach(colorCategories) { category in
+                            Button(action: {
+                                withAnimation {
+                                    if selectedCategory?.name == category.name {
+                                        // 既に選択されている場合は選択解除
+                                        selectedCategory = nil
+                                        filteredImageNames = predefinedBackgroundImageNames
+                                        print("\(category.name) の選択を解除")
+                                    } else {
+                                        // 新しく選択
+                                        selectedCategory = category
+                                        filteredImageNames = predefinedBackgroundImageNames.filter { $0.hasPrefix("投稿一覧" + category.name) }
+                                        print("\(category.name) を選択")
+                                    }
+                                    
+                                    // 背景画像をクリア
+                                    userSettingsViewModel.clearPostListImage()
+                                    
+                                    // 投稿一覧の色をデフォルトに戻す
+                                    userSettingsViewModel.updatePostListColor(Color(hex: "#FFFFFF"))
+                                    
+                                    // シートを閉じる
+                                    isColorSheetPresented = false
+                                }
+                            }) {
+                                ZStack {
+                                    Circle()
+                                        .fill(category.color)
+                                        .frame(width: 50, height: 50)
+                                        .overlay(
+                                            Circle()
+                                                .stroke(selectedCategory?.name == category.name ? Color.black : Color.clear, lineWidth: 3)
+                                        )
+                                    
+                                    if selectedCategory?.name == category.name {
+                                        Image(systemName: "checkmark")
+                                            .foregroundColor(.white)
+                                            .font(.system(size: 20, weight: .bold))
+                                    }
+                                }
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
+                    }
+                }
+                
+                Spacer()
+                
+                // キャンセルボタン
+                Button(action: {
+                    isColorSheetPresented = false
+                }) {
+                    Text("キャンセル")
+                        .foregroundColor(.red)
+                        .padding()
+                }
+            }
+            .padding()
+        }
+    }
     
     /// 選択された色に最も近い色カテゴリを取得
     func closestColorCategory(to color: Color) -> ColorCategory? {
@@ -308,10 +283,18 @@ struct PostListEditorView: View {
                                 pow(selectedRGB.green - categoryRGB.green, 2) +
                                 pow(selectedRGB.blue - categoryRGB.blue, 2))
             
+            print("カテゴリ: \(category.name), 距離: \(distance)")
+            
             if distance < smallestDistance {
                 smallestDistance = distance
                 closestCategory = category
             }
+        }
+        
+        if let closest = closestCategory {
+            print("最も近いカテゴリ: \(closest.name)")
+        } else {
+            print("最も近いカテゴリが見つかりませんでした。")
         }
         
         return closestCategory

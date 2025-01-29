@@ -8,22 +8,7 @@
 import SwiftUI
 
 extension Color {
-    /// Converts a `Color` to its hex string representation.
-    func toHex() -> String? {
-        // Convert Color to UIColor
-        let uiColor = UIColor(self)
-        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
-        if uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha) {
-            let r = Int(red * 255)
-            let g = Int(green * 255)
-            let b = Int(blue * 255)
-            return String(format: "#%02X%02X%02X", r, g, b)
-        }
-        return nil
-    }
-    
-    /// Creates a `Color` from a hex string.
-    /// - Parameter hex: The hex string, e.g., "#FFC1C1".
+    /// HexコードからColorを初期化
     init(hex: String) {
         let hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
         let cleanedHex = hexSanitized.hasPrefix("#") ? String(hexSanitized.dropFirst()) : hexSanitized
@@ -38,17 +23,31 @@ extension Color {
             b = Double(rgb & 0x0000FF) / 255.0
             self = Color(red: r, green: g, blue: b)
         } else {
-            // Default to white if invalid hex
+            // 無効なHexコードの場合は白色をデフォルトとする
             self = Color.white
         }
     }
     
-    /// Retrieves the RGB components of the color.
-    func getRGB() -> (red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat)? {
+    /// ColorをHexコードに変換
+    func toHex() -> String? {
+        // UIColorに変換
         let uiColor = UIColor(self)
         var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
         if uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha) {
-            return (red, green, blue, alpha)
+            let r = Int(red * 255)
+            let g = Int(green * 255)
+            let b = Int(blue * 255)
+            return String(format: "#%02X%02X%02X", r, g, b)
+        }
+        return nil
+    }
+    
+    /// ColorからRGBコンポーネントを取得
+    func getRGB() -> (red: CGFloat, green: CGFloat, blue: CGFloat)? {
+        let uiColor = UIColor(self)
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        if uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha) {
+            return (red, green, blue)
         }
         return nil
     }
@@ -158,6 +157,7 @@ struct BackgroundColorView: View {
             Spacer()
         }
         .padding()
+        .background(Color("backgroundColor"))
         .onAppear {
             // 現在の背景色のHexコードを選択状態に反映
 //            selectedColorHex = userSettingsViewModel.settings.backgroundColor

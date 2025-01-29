@@ -276,6 +276,7 @@ struct HeaderEditorView: View {
             }
         }
         .padding()
+        .background(Color("backgroundColor"))
 //            .navigationBarTitle("ヘッダー編集", displayMode: .inline)
 //            .navigationBarItems(trailing: Button("完了") {
 //                userSettingsViewModel.updateHeaderText(headerText)
