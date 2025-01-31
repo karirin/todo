@@ -23,20 +23,17 @@ struct HeaderEditorView: View {
     @State private var selectedTextColorHex: String = "#000000" // 選択されたテキスト色のHexコード
     @State private var isInitializing: Bool = true
 
-    // 12色のHexコード
     let predefinedColorHexes: [String] = [
-        "#FFC1C1", // Soft Red
-        "#FFD8B1", // Soft Orange
-        "#FFF5BA", // Soft Yellow
-        "#C1FFC1", // Soft Green
-        "#C1D4FF", // Soft Blue
-        "#D1C1FF", // Soft Indigo
-        "#E1C1FF", // Soft Purple
-        "#FFC1F1", // Soft Pink
-        "#E0E0E0", // Soft Gray
-        "#D2B48C", // Soft Brown
-        "#A1FFFF", // Soft Cyan
-        "#A1FFC1"  // Soft Teal
+        "#FFFFFF", // White
+        "#000000", // Black
+        "#808080", // Gray
+        "#FF0000", // Red
+        "#FFA500", // Orange
+        "#FFFF00", // Yellow
+        "#008000", // Green
+        "#0000FF", // Blue
+        "#800080", // Purple
+        "#A52A2A"  // Brown
     ]
     
     let predefinedBackgroundImageNames: [String] = [
@@ -95,29 +92,26 @@ struct HeaderEditorView: View {
             .padding(.horizontal)
             
             // ヘッダーテキスト色の編集
-            VStack(alignment: .leading, spacing: 10) {
-                HStack {
-                    Spacer()
-                    Text("ヘッダーの文字色")
-                        .font(.headline)
-                    Spacer()
-                }
-                ColorPicker("文字色を選択", selection: $headerTextColor)
-                    .padding(.trailing, 20)
-                    .onChange(of: headerTextColor) { newColor in
-                        if isInitializing { return }
-                        if userSettingsViewModel.headerImageName != nil {
-                            userSettingsViewModel.clearHeaderImage()
-                        }
-                        userSettingsViewModel.updateHeaderTextColor(newColor)
-                        
-                        // 選択された色のHexコードを更新
-                        if let hex = newColor.toHex() {
-                            selectedTextColorHex = hex
-                        }
-                    }
-            }
-            .padding(.horizontal)
+//            VStack(alignment: .leading, spacing: 10) {
+//                HStack {
+//                    Spacer()
+//                    Text("ヘッダーの文字色")
+//                        .font(.headline)
+//                    Spacer()
+//                }
+//                ColorPicker("文字色を選択", selection: $headerTextColor)
+//                    .padding(.trailing, 20)
+//                    .onChange(of: headerTextColor) { newColor in
+//                        if isInitializing { return }
+//                        userSettingsViewModel.updateHeaderTextColor(newColor)
+//                        
+//                        // 選択された色のHexコードを更新
+//                        if let hex = newColor.toHex() {
+//                            selectedTextColorHex = hex
+//                        }
+//                    }
+//            }
+//            .padding(.horizontal)
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
                     Spacer()
@@ -125,7 +119,7 @@ struct HeaderEditorView: View {
                         .font(.headline)
                     Spacer()
                 }
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 20) {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 20) {
                     ForEach(predefinedColorHexes, id: \.self) { hex in
                         ColorButton(
                             hex: hex,
@@ -143,7 +137,6 @@ struct HeaderEditorView: View {
                         }
                     }
                 }
-                .padding(.horizontal)
             }
             //            VStack(alignment: .leading, spacing: 10) {
             //                HStack {

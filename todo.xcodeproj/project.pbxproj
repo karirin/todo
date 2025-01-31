@@ -18,6 +18,7 @@
 		1801FFF32D45E91A007625A2 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1801FFF22D45E91A007625A2 /* SettingsView.swift */; };
 		1801FFF52D46897E007625A2 /* HeaderEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1801FFF42D46897E007625A2 /* HeaderEditorView.swift */; };
 		1801FFF72D491686007625A2 /* PostListEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1801FFF62D491686007625A2 /* PostListEditorView.swift */; };
+		1801FFF92D4A6675007625A2 /* PlusButtonEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1801FFF82D4A6675007625A2 /* PlusButtonEditorView.swift */; };
 		189F952C2D43BBC50066E6CF /* todoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 189F952B2D43BBC50066E6CF /* todoApp.swift */; };
 		189F95302D43BBC70066E6CF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 189F952F2D43BBC70066E6CF /* Assets.xcassets */; };
 		189F95332D43BBC70066E6CF /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 189F95322D43BBC70066E6CF /* Preview Assets.xcassets */; };
@@ -60,6 +61,7 @@
 		1801FFF22D45E91A007625A2 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		1801FFF42D46897E007625A2 /* HeaderEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeaderEditorView.swift; sourceTree = "<group>"; };
 		1801FFF62D491686007625A2 /* PostListEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostListEditorView.swift; sourceTree = "<group>"; };
+		1801FFF82D4A6675007625A2 /* PlusButtonEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlusButtonEditorView.swift; sourceTree = "<group>"; };
 		189F95282D43BBC50066E6CF /* todo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = todo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		189F952B2D43BBC50066E6CF /* todoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = todoApp.swift; sourceTree = "<group>"; };
 		189F952F2D43BBC70066E6CF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -149,6 +151,7 @@
 				1801FFF42D46897E007625A2 /* HeaderEditorView.swift */,
 				1801FFF22D45E91A007625A2 /* SettingsView.swift */,
 				1801FFE22D45DB77007625A2 /* UserSettingsViewModel.swift */,
+				1801FFF82D4A6675007625A2 /* PlusButtonEditorView.swift */,
 				189F95552D43BFB60066E6CF /* AuthManager.swift */,
 				189F95572D43CDFE0066E6CF /* GoogleService-Info.plist */,
 				189F952F2D43BBC70066E6CF /* Assets.xcassets */,
@@ -491,6 +494,7 @@
 				1801FFEF2D45DC8E007625A2 /* CalendarView.swift in Sources */,
 				1801FFF52D46897E007625A2 /* HeaderEditorView.swift in Sources */,
 				1801FFF72D491686007625A2 /* PostListEditorView.swift in Sources */,
+				1801FFF92D4A6675007625A2 /* PlusButtonEditorView.swift in Sources */,
 				1801FFE52D45DBB0007625A2 /* BackgroundColorView.swift in Sources */,
 				1801FFF32D45E91A007625A2 /* SettingsView.swift in Sources */,
 			);

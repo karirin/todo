@@ -247,8 +247,6 @@ struct TodoListView: View {
                         }
                     }
             }
-            //        }
-            
         }
         .overlay(
             ZStack {
@@ -266,12 +264,20 @@ struct TodoListView: View {
                                     guard !newTodoTitle.trimmingCharacters(in: .whitespaces).isEmpty else { return }
                                 }
                             }) {
-                                Image(systemName: "plus")
-                                    .font(.system(size: 30))
-                                    .padding(20)
-                                    .background(Color.black)
-                                    .foregroundColor(Color.white)
-                                    .clipShape(Circle())
+                                if let plusButtonImageName = userSettingsViewModel.plusButtonImageName,
+                                   let uiImage = UIImage(named: plusButtonImageName) {
+                                    Image(uiImage: uiImage)
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 70)
+                                } else {
+                                    Image(systemName: "plus")
+                                        .font(.system(size: 30))
+                                        .padding(20)
+                                        .background(userSettingsViewModel.plusButtonColor)
+                                        .foregroundColor(Color.white)
+                                        .clipShape(Circle())
+                                }
                             }
                             .shadow(radius: 3)
                             .padding()
@@ -334,30 +340,6 @@ struct TodoListView: View {
     
     func isSmallDevice() -> Bool {
         return UIScreen.main.bounds.width < 390
-    }
-}
-
-struct PlusButtonEditorView: View {
-    @ObservedObject var userSettingsViewModel: UserSettingsViewModel
-    @Environment(\.presentationMode) var presentationMode
-    @State private var buttonColor: Color = .black
-    
-    var body: some View {
-        NavigationView {
-            Form {
-                Section(header: Text("プラスボタンの編集")) {
-                    ColorPicker("ボタンの色", selection: $buttonColor)
-                }
-            }
-            .navigationBarTitle("プラスボタン編集", displayMode: .inline)
-            .navigationBarItems(trailing: Button("完了") {
-                //                userSettingsViewModel.updatePlusButtonColor(buttonColor)
-                presentationMode.wrappedValue.dismiss()
-            })
-            .onAppear {
-                //                self.buttonColor = userSettingsViewModel.plusButtonColor
-            }
-        }
     }
 }
 

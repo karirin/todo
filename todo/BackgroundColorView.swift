@@ -69,7 +69,7 @@ struct ColorButton: View {
             ZStack {
                 Circle()
                     .fill(Color(hex: hex))
-                    .frame(width: 40, height: 40)
+                    .frame(width: 50, height: 50)
                     .overlay(
                         Circle()
                             .stroke(isSelected ? Color.black : Color.clear, lineWidth: 3)

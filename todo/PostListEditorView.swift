@@ -74,7 +74,6 @@ struct PostListEditorView: View {
                     Button(action: {
                         selectedColor = color
                         userSettingsViewModel.updateTodoTextColor(color)
-                        presentationMode.wrappedValue.dismiss()
                         print("選択されたTodoテキスト色: \(color.toHex() ?? "N/A")")
                     }) {
                         ZStack {
@@ -93,99 +92,99 @@ struct PostListEditorView: View {
                 }
             }
             .padding(.horizontal)
-            // 投稿一覧の背景画像セクション
-            VStack(alignment: .leading, spacing: 10) {
-                HStack {
-                    // 背景画像を色でフィルタリングするボタン
-                    Button(action: {
-                        isColorSheetPresented = true
-                    }) {
-                        HStack {
-                            Image(systemName: "paintpalette")
-                                .padding(.trailing, -5)
-                            Text("色で探す")
-                        }
-                        .padding(5)
-                        .foregroundColor(.gray)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color.gray, lineWidth: 1)
-                        )
-                    }
-                    .opacity(0)
-                    Spacer()
-                    Text("投稿の背景画像")
-                        .font(.headline)
-                    Spacer()
-                    Button(action: {
-                        isColorSheetPresented = true
-                    }) {
-                        HStack {
-                            Image(systemName: "paintpalette")
-                                .padding(.trailing, -5)
-                            Text("色で探す")
-                        }
-                        .padding(5)
-                        .foregroundColor(.gray)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color.gray, lineWidth: 1)
-                        )
-                    }
-                }
-                .padding(.horizontal)
-                
-                // 背景画像のグリッド
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
-                    
-                    // 背景無しボタン
-                    Button(action: {
-                        withAnimation {
-                            userSettingsViewModel.clearPostListImage()
-                            userSettingsViewModel.updatePostListColor(Color(hex: "#FFFFFF"))
-                            print("背景無しを選択")
-                        }
-                    }) {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(Color(UIColor.secondarySystemBackground))
-                                .frame(height: 40)
-                            
-                            VStack {
-                                Text("背景無し")
-                                    .foregroundColor(.black)
+                // 投稿一覧の背景画像セクション
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        // 背景画像を色でフィルタリングするボタン
+                        Button(action: {
+                            isColorSheetPresented = true
+                        }) {
+                            HStack {
+                                Image(systemName: "paintpalette")
+                                    .padding(.trailing, -5)
+                                Text("色で探す")
                             }
+                            .padding(5)
+                            .foregroundColor(.gray)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(Color.gray, lineWidth: 1)
+                            )
                         }
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .stroke(userSettingsViewModel.postListImageName == nil ? Color.black : Color.clear, lineWidth: 2)
-                        )
+                        .opacity(0)
+                        Spacer()
+                        Text("投稿の背景画像")
+                            .font(.headline)
+                        Spacer()
+                        Button(action: {
+                            isColorSheetPresented = true
+                        }) {
+                            HStack {
+                                Image(systemName: "paintpalette")
+                                    .padding(.trailing, -5)
+                                Text("色で探す")
+                            }
+                            .padding(5)
+                            .foregroundColor(.gray)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(Color.gray, lineWidth: 1)
+                            )
+                        }
                     }
-                    
-                    // フィルタリングされた背景画像ボタン
-                    ForEach(filteredImageNames, id: \.self) { imageName in
+                    .padding(.horizontal)
+                    ScrollView{
+                    // 背景画像のグリッド
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
+                        
+                        // 背景無しボタン
                         Button(action: {
                             withAnimation {
-                                userSettingsViewModel.updatePostListImage(named: imageName)
+                                userSettingsViewModel.clearPostListImage()
                                 userSettingsViewModel.updatePostListColor(Color(hex: "#FFFFFF"))
-                                print("背景画像を選択: \(imageName)")
+                                print("背景無しを選択")
                             }
                         }) {
-                            Image(imageName)
-                                .resizable()
-                                .scaledToFill()
-                                .cornerRadius(10)
-                                .clipped()
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .stroke(userSettingsViewModel.postListImageName == imageName ? Color.black : Color.clear, lineWidth: 2)
-                                )
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(Color(UIColor.secondarySystemBackground))
+                                    .frame(height: 40)
+                                
+                                VStack {
+                                    Text("背景無し")
+                                        .foregroundColor(.black)
+                                }
+                            }
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(userSettingsViewModel.postListImageName == nil ? Color.black : Color.clear, lineWidth: 2)
+                            )
+                        }
+                        
+                        // フィルタリングされた背景画像ボタン
+                        ForEach(filteredImageNames, id: \.self) { imageName in
+                            Button(action: {
+                                withAnimation {
+                                    userSettingsViewModel.updatePostListImage(named: imageName)
+                                    userSettingsViewModel.updatePostListColor(Color(hex: "#FFFFFF"))
+                                    print("背景画像を選択: \(imageName)")
+                                }
+                            }) {
+                                Image(imageName)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .cornerRadius(10)
+                                    .clipped()
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .stroke(userSettingsViewModel.postListImageName == imageName ? Color.black : Color.clear, lineWidth: 2)
+                                    )
+                            }
                         }
                     }
+                    .padding()
                 }
-                .padding()
             }
-            
             Spacer()
         }
         .background(Color("backgroundColor"))
