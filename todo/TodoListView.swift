@@ -168,58 +168,69 @@ struct TodoListView: View {
                 Image(uiImage: uiImage)
                     .resizable()
                     .edgesIgnoringSafeArea(.all)
+                    .shadow(color: isCustomizationMode ? Color.black : Color.clear, radius: 20)
             } else {
                 userSettingsViewModel.backgroundColor
                     .ignoresSafeArea()
+                    .shadow(color: isCustomizationMode ? Color.black : Color.clear, radius: 10)
             }
             VStack {
-                HStack {
-                    Button(action: {
-                        isCustomizationMode.toggle()
-                    }) {
-                        Image(systemName: isCustomizationMode ? "pencil.circle.fill" : "pencil.circle")
-                            .font(.title)
-                            .foregroundColor(isCustomizationMode ? .red : .white)
-                            .zIndex(isCustomizationMode ? 1 : 0)
+                ZStack {
+                    HStack {
+                        Button(action: {
+                            isCustomizationMode.toggle()
+                        }) {
+                            Image(systemName: isCustomizationMode ? "pencil.circle.fill" : "pencil.circle")
+                                .font(.title)
+                                .foregroundColor(isCustomizationMode ? .red : .white)
+                                .zIndex(isCustomizationMode ? 1 : 0)
+                        }
+                        .padding(.leading)
+                        .opacity(0)
+                        Spacer()
+                        Text(userSettingsViewModel.headerText)
+                            .foregroundColor(userSettingsViewModel.headerTextColor)
+                            .font(.system(size: 20))
+                            .fontWeight(.bold)
+                        Spacer()
+                        Button(action: {
+                            isCustomizationMode.toggle()
+                        }) {
+                            Image(systemName: isCustomizationMode ? "pencil.circle.fill" : "pencil.circle")
+                                .font(.title)
+                                .foregroundColor(isCustomizationMode ? .red : .white)
+                                .zIndex(isCustomizationMode ? 1 : 0)
+                        }
+                        .padding(.trailing)
                     }
-                    .padding(.leading)
-                    .opacity(0)
-                    Spacer()
-                    Text(userSettingsViewModel.headerText)
-                        .font(.system(size: 20))
-                        .fontWeight(.bold)
-                        .foregroundColor(userSettingsViewModel.headerTextColor)
-                    Spacer()
-                    Button(action: {
-                        isCustomizationMode.toggle()
-                    }) {
-                        Image(systemName: isCustomizationMode ? "pencil.circle.fill" : "pencil.circle")
-                            .font(.title)
-                            .foregroundColor(isCustomizationMode ? .red : .white)
-                            .zIndex(isCustomizationMode ? 1 : 0)
-                    }
-                    .padding(.trailing)
-                }
-                .frame(maxWidth: .infinity, maxHeight: 60)
-                .background(
-                    Group {
-                        if let headerImageName = userSettingsViewModel.headerImageName,
-                           let uiImage = UIImage(named: headerImageName) {
-                            Image(uiImage: uiImage)
-                                .resizable()
-                                .edgesIgnoringSafeArea(.all)
-                        } else {
-                            userSettingsViewModel.headerColor
-                                .edgesIgnoringSafeArea(.all)
+                    .frame(maxWidth: .infinity, maxHeight: 60)
+                    .background(
+                        Group {
+                            if let headerImageName = userSettingsViewModel.headerImageName,
+                               let uiImage = UIImage(named: headerImageName) {
+                                Image(uiImage: uiImage)
+                                    .resizable()
+                                    .edgesIgnoringSafeArea(.all)
+                                
+                                .shadow(color: isCustomizationMode ? Color.black.opacity(0.9) : Color.clear, radius: 10)
+                            } else {
+                                userSettingsViewModel.headerColor
+                                    .edgesIgnoringSafeArea(.all)
+                                
+                                .shadow(color: isCustomizationMode ? Color.black.opacity(0.9) : Color.clear, radius: 10)
+                            }
+                        }
+                    )
+                    .foregroundColor(Color.white)
+                    .onTapGesture {
+                        if isCustomizationMode {
+                            print("headerEditor")
+                            activeSheet = .headerEditor
                         }
                     }
-                )
-                .foregroundColor(Color.white)
-                .onTapGesture {
-                    if isCustomizationMode {
-                        print("headerEditor")
-                        activeSheet = .headerEditor
-                    }
+//                    RoundedCorner(radius: isSmallDevice() ? 0 : 230, corners: [.topLeft, .topRight])
+//                        .stroke(isCustomizationMode ? Color.yellow : Color.clear, lineWidth: 15)
+//                        .frame(maxWidth: .infinity, maxHeight: 60)
                 }
                 VStack(spacing: 10) {
                     ForEach(todoViewModel.items) { item in
@@ -229,7 +240,7 @@ struct TodoListView: View {
                                 draggingItem: $draggingItem,
                                 dragOffset: $dragOffset, isCustomizationMode: $isCustomizationMode, activeSheet: $activeSheet,
                                 todoViewModel: todoViewModel, userSettingsViewModel: userSettingsViewModel
-                            )
+                            ).shadow(color: isCustomizationMode ? Color.black : Color.clear, radius: 10)
                         }
                         .onTapGesture {
                             if isCustomizationMode {
@@ -281,6 +292,7 @@ struct TodoListView: View {
                             }
                             .shadow(radius: 3)
                             .padding()
+                            .shadow(color: isCustomizationMode ? Color.black : Color.clear, radius: 10)
                         }
                     }
                 }
@@ -340,6 +352,20 @@ struct TodoListView: View {
     
     func isSmallDevice() -> Bool {
         return UIScreen.main.bounds.width < 390
+    }
+}
+
+struct RoundedCorner: Shape {
+    var radius: CGFloat = .infinity
+    var corners: UIRectCorner = .allCorners
+    
+    func path(in rect: CGRect) -> Path {
+        let path = UIBezierPath(
+            roundedRect: rect,
+            byRoundingCorners: corners,
+            cornerRadii: CGSize(width: radius, height: radius)
+        )
+        return Path(path.cgPath)
     }
 }
 

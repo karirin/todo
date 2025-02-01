@@ -115,7 +115,7 @@ struct HeaderEditorView: View {
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
                     Spacer()
-                    Text("文字色プリセットから選択")
+                    Text("文字色を選択")
                         .font(.headline)
                     Spacer()
                 }
@@ -125,15 +125,17 @@ struct HeaderEditorView: View {
                             hex: hex,
                             selectedHex: selectedTextColorHex
                         ) {
-                            if isInitializing { return }
-                            // まずヘッダーテキスト色をクリア（必要に応じて）
-                            // userSettingsViewModel.clearHeaderTextColor() // 必要なら実装
-                            
-                            // その後、ヘッダーテキスト色を更新
-                            selectedTextColorHex = hex
-                            let selectedTextColor = Color(hex: hex)
-                            headerTextColor = selectedTextColor
-                            userSettingsViewModel.updateHeaderTextColor(selectedTextColor)
+                            withAnimation {
+                                if isInitializing { return }
+                                // まずヘッダーテキスト色をクリア（必要に応じて）
+                                // userSettingsViewModel.clearHeaderTextColor() // 必要なら実装
+                                
+                                // その後、ヘッダーテキスト色を更新
+                                selectedTextColorHex = hex
+                                let selectedTextColor = Color(hex: hex)
+                                headerTextColor = selectedTextColor
+                                userSettingsViewModel.updateHeaderTextColor(selectedTextColor)
+                            }
                         }
                     }
                 }
@@ -250,13 +252,14 @@ struct HeaderEditorView: View {
                                 .scaledToFit()
                                 .cornerRadius(8)
                                 .onTapGesture {
-                                    headerImageName = imageName
-                                    if let imageName = headerImageName {
-                                        userSettingsViewModel.updateHeaderImage(named: imageName)
-                                    } else {
-                                        userSettingsViewModel.clearHeaderImage()
+                                    withAnimation {
+                                        headerImageName = imageName
+                                        if let imageName = headerImageName {
+                                            userSettingsViewModel.updateHeaderImage(named: imageName)
+                                        } else {
+                                            userSettingsViewModel.clearHeaderImage()
+                                        }
                                     }
-                                    presentationMode.wrappedValue.dismiss()
                                 }
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 8)
@@ -289,8 +292,10 @@ struct HeaderEditorView: View {
                         // 現在の背景色のHexコードを選択状態に反映
             //            selectedColor = Color(hex: userSettingsViewModel.settings.backgroundColor)
                         if let category = closestColorCategory(to: selectedColor) {
-                            filteredImageNames = predefinedBackgroundImageNames.filter { $0.hasPrefix(category.name) }
+                            print("filteredImageNames = predefinedBackgroundImageNames1")
+                            filteredImageNames = predefinedBackgroundImageNames
                         } else {
+                            print("filteredImageNames = predefinedBackgroundImageNames2")
                             filteredImageNames = predefinedBackgroundImageNames
                         }
                 DispatchQueue.main.async {

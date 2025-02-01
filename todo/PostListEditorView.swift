@@ -192,7 +192,7 @@ struct PostListEditorView: View {
             // 投稿一覧色に基づいてフィルタリング
             if let category = closestColorCategory(to: userSettingsViewModel.postListColor) {
                 print("選択された色カテゴリ: \(category.name)")
-                filteredImageNames = predefinedBackgroundImageNames.filter { $0.hasPrefix("投稿一覧" + category.name) }
+                filteredImageNames = predefinedBackgroundImageNames
                 print("フィルタリングされた画像名: \(filteredImageNames)")
             } else {
                 filteredImageNames = predefinedBackgroundImageNames

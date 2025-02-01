@@ -152,11 +152,7 @@ struct BackgroundImageView: View {
         .onAppear {
             // 現在の背景色のHexコードを選択状態に反映
 //            selectedColor = Color(hex: userSettingsViewModel.settings.backgroundColor)
-            if let category = closestColorCategory(to: selectedColor) {
-                filteredImageNames = predefinedBackgroundImageNames.filter { $0.hasPrefix(category.name) }
-            } else {
-                filteredImageNames = predefinedBackgroundImageNames
-            }
+            filteredImageNames = predefinedBackgroundImageNames
         }
         .sheet(isPresented: $isColorSheetPresented) {
             VStack(spacing: 20) {

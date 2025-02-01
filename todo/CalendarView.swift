@@ -9,129 +9,180 @@ import SwiftUI
 
 struct CalendarView: View {
     @ObservedObject var todoViewModel: TodoViewModel
+    @ObservedObject var userSettingsViewModel: UserSettingsViewModel
     @State private var currentDate = Date()
     @State private var selectedDate: Date? = Date()
     
     var body: some View {
-        VStack {
-            // Header: Month Navigation
-            HStack {
-                Button(action: {
-                    currentDate = Calendar.current.date(byAdding: .month, value: -1, to: currentDate) ?? currentDate
-                }) {
-                    Image(systemName: "chevron.left")
-                        .padding()
-                }
-                Spacer()
-                Text(monthYearFormatter.string(from: currentDate))
-                    .font(.headline)
-                Spacer()
-                Button(action: {
-                    currentDate = Calendar.current.date(byAdding: .month, value: 1, to: currentDate) ?? currentDate
-                }) {
-                    Image(systemName: "chevron.right")
-                        .padding()
-                }
-            }.foregroundColor(.black)
-            
-            // Weekday Labels
-            let japaneseWeekdays = ["日", "月", "火", "水", "木", "金", "土"]
-            HStack {
-                ForEach(japaneseWeekdays, id: \.self) { day in
-                    Text(day)
-                        .frame(maxWidth: .infinity)
-                        .fontWeight(.bold)
-                        .foregroundColor(.black)
-                }
+        ZStack {
+            if let imageName = userSettingsViewModel.backgroundImageName,
+               let uiImage = UIImage(named: imageName) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .edgesIgnoringSafeArea(.all)
+            } else {
+                userSettingsViewModel.backgroundColor
+                    .ignoresSafeArea()
             }
-            
-            // Date Grid
-            let daysInMonth = generateDaysInMonth(for: currentDate)
-            let columns = Array(repeating: GridItem(.flexible()), count: 7)
-            
-            LazyVGrid(columns: columns, spacing: 10) {
-                ForEach(daysInMonth, id: \.self) { date in
-                    if let date = date {
-                        let hasTodo = todoViewModel.items.contains { Calendar.current.isDate($0.dueDate, inSameDayAs: date) }
-                        
-                        Button(action: {
-                            selectedDate = date
-                        }) {
-                            VStack {
-                                Text("\(Calendar.current.component(.day, from: date))")
-                                    .foregroundColor(Calendar.current.isDate(date, inSameDayAs: Date()) ? .red : .primary)
-                                    .fontWeight(Calendar.current.isDate(date, inSameDayAs: Date()) ? .bold : .regular)
-                                if hasTodo {
-                                    Circle()
-                                        .fill(Color.blue)
-                                        .frame(width: 6, height: 6)
-                                }
-                            }
-                            .padding(8)
-                            .background(
-                                Calendar.current.isDate(date, inSameDayAs: selectedDate ?? Date()) ?
-                                Color.blue.opacity(0.3) :
-                                Color.clear
-                            )
-                            .cornerRadius(8)
-                        }
-                    } else {
-                        // Empty Cell for Placeholder Dates
-                        Text("")
-                            .padding(8)
-                    }
-                }
-            }
-            .padding()
-            
-            // Selected Date's Todo List
-            if let selectedDate = selectedDate {
+            VStack {
+
+                // Header: Month Navigation
                 HStack {
-                    Image(systemName: "calendar.circle")
-                        .font(.system(size: 20))
-                    Text("\(formattedDate(selectedDate))")
+                    Button(action: {
+                        currentDate = Calendar.current.date(byAdding: .month, value: -1, to: currentDate) ?? currentDate
+                    }) {
+                        Image(systemName: "chevron.left")
+                            .padding()
+                    }
+                    Spacer()
+                    Text(monthYearFormatter.string(from: currentDate))
                         .font(.headline)
                     Spacer()
-                }
-                .padding(.leading)
-                
-                let filteredTodos = todoViewModel.items.filter { Calendar.current.isDate($0.dueDate, inSameDayAs: selectedDate) }
-                
-                if filteredTodos.isEmpty {
-                    Text("この日にTodoはありません")
-                        .foregroundColor(.gray)
-                        .padding()
-                } else {
-                    ForEach(filteredTodos) { item in
-                        HStack {
-                            Image(systemName: item.isCompleted ? "checkmark.circle.fill" : "circle")
-                                .foregroundColor(item.isCompleted ? .green : .gray)
-                                .onTapGesture {
-                                    todoViewModel.toggleCompletion(of: item)
-                                }
-                            VStack(alignment: .leading) {
-                                Text(item.title)
-                                    .font(.system(size: 18))
-                                    .strikethrough(item.isCompleted, color: .black)
-                                    .foregroundColor(item.isCompleted ? .gray : .black)
-                                Text("期限: \(formattedDate(item.dueDate))")
-                                    .font(.subheadline)
-                                    .foregroundColor(.gray)
+                    Button(action: {
+                        currentDate = Calendar.current.date(byAdding: .month, value: 1, to: currentDate) ?? currentDate
+                    }) {
+                        Image(systemName: "chevron.right")
+                            .padding()
+                    }
+                }.foregroundColor(.black)
+                    .background(
+                        Group {
+                            if let headerImageName = userSettingsViewModel.headerImageName,
+                               let uiImage = UIImage(named: headerImageName) {
+                                Image(uiImage: uiImage)
+                                    .resizable()
+                                    .edgesIgnoringSafeArea(.all)
+                            } else {
+                                userSettingsViewModel.headerColor
+                                    .edgesIgnoringSafeArea(.all)
                             }
-                            Spacer()
                         }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            todoViewModel.toggleCompletion(of: item)
-                        }
-                        Divider()
+                    )
+                // Weekday Labels
+                VStack {
+                let japaneseWeekdays = ["日", "月", "火", "水", "木", "金", "土"]
+                HStack {
+                    ForEach(japaneseWeekdays, id: \.self) { day in
+                        Text(day)
+                            .frame(maxWidth: .infinity)
+                            .fontWeight(.bold)
+                            .foregroundColor(.black)
                     }
                 }
+                // Date Grid
+                let daysInMonth = generateDaysInMonth(for: currentDate)
+                let columns = Array(repeating: GridItem(.flexible()), count: 7)
+                
+                LazyVGrid(columns: columns, spacing: 10) {
+                    ForEach(daysInMonth, id: \.self) { date in
+                        if let date = date {
+                            let hasTodo = todoViewModel.items.contains { Calendar.current.isDate($0.dueDate, inSameDayAs: date) }
+                            
+                            Button(action: {
+                                selectedDate = date
+                            }) {
+                                VStack {
+                                    Text("\(Calendar.current.component(.day, from: date))")
+                                        .foregroundColor(Calendar.current.isDate(date, inSameDayAs: Date()) ? .red : .primary)
+                                        .fontWeight(Calendar.current.isDate(date, inSameDayAs: Date()) ? .bold : .regular)
+                                    if hasTodo {
+                                        Circle()
+                                            .fill(Color.blue)
+                                            .frame(width: 6, height: 6)
+                                    }
+                                }
+                                .padding(8)
+                                .background(
+                                    Calendar.current.isDate(date, inSameDayAs: selectedDate ?? Date()) ?
+                                    Color.blue.opacity(0.3) :
+                                        Color.clear
+                                )
+                                .cornerRadius(8)
+                            }
+                        } else {
+                            // Empty Cell for Placeholder Dates
+                            Text("")
+                                .padding(8)
+                        }
+                    }
+                }
+                .padding()
             }
-            
-            Spacer()
+                .padding(.top)
+                .background(Color("backgroundColor"))
+                .padding(.top, -15)
+                
+                // Selected Date's Todo List
+                if let selectedDate = selectedDate {
+                    HStack {
+                        HStack{
+                            Image(systemName: "calendar.circle")
+                                .font(.system(size: 20))
+                            Text("\(formattedDate(selectedDate))")
+                                .font(.headline)
+                        }
+                        .background(Color("backgroundColor"))
+                        .cornerRadius(30)
+                        Spacer()
+                    }
+                    .padding(.leading)
+                    .foregroundColor(.black)
+                    .fontWeight(.bold)
+                    
+                    let filteredTodos = todoViewModel.items.filter { Calendar.current.isDate($0.dueDate, inSameDayAs: selectedDate) }
+                    
+                    if filteredTodos.isEmpty {
+                        Text("この日にTodoはありません")
+                            .foregroundColor(.black)
+                            .fontWeight(.bold)
+                            .padding()
+                            .background(Color("backgroundColor"))
+                            .cornerRadius(30)
+                    } else {
+                        ForEach(filteredTodos) { item in
+                            HStack {
+                                Image(systemName: item.isCompleted ? "checkmark.circle.fill" : "circle")
+                                    .foregroundColor(userSettingsViewModel.postListTextColor)
+                                    .onTapGesture {
+                                        todoViewModel.toggleCompletion(of: item)
+                                    }
+                                VStack(alignment: .leading) {
+                                    Text(item.title)
+                                        .font(.system(size: 24))
+                                        .strikethrough(item.isCompleted, color: .black)
+                                        .foregroundColor(item.isCompleted ? .gray : .black)
+                                }
+                                Spacer()
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .shadow(color:  Color.gray.opacity(0.2), radius: 5)
+                            .contentShape(Rectangle())
+                            .background(
+                    //            isDragging ? Color.blue.opacity(0.2) : Color.white
+                                Group {
+                                    if let headerImageName = userSettingsViewModel.postListImageName,
+                                       let uiImage = UIImage(named: headerImageName) {
+                                        Image(uiImage: uiImage)
+                                            .resizable()
+                                            .edgesIgnoringSafeArea(.all)
+                                    } else {
+                                        userSettingsViewModel.postListColor
+                                            .edgesIgnoringSafeArea(.all)
+                                    }
+                                }
+                            )
+                            .cornerRadius(8)
+                            .padding()
+                            .onTapGesture {
+                                todoViewModel.toggleCompletion(of: item)
+                            }
+                        }
+                    }
+                }
+                
+                Spacer()
+            }
         }
     }
     
@@ -182,5 +233,5 @@ struct CalendarView: View {
 }
 
 #Preview {
-    CalendarView(todoViewModel: TodoViewModel(userID: AuthManager().currentUserId!))
+    CalendarView(todoViewModel: TodoViewModel(userID: AuthManager().currentUserId!), userSettingsViewModel: UserSettingsViewModel(userID: AuthManager().currentUserId!))
 }

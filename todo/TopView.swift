@@ -23,7 +23,7 @@ struct TopView: View {
                     Label("Todo", systemImage: "checkmark.circle")
                 }
             
-            CalendarView(todoViewModel: todoViewModel)
+            CalendarView(todoViewModel: todoViewModel, userSettingsViewModel: userSettingsViewModel)
                 .tabItem {
                     Label("Calendar", systemImage: "calendar")
                 }

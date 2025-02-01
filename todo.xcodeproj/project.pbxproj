@@ -19,6 +19,7 @@
 		1801FFF52D46897E007625A2 /* HeaderEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1801FFF42D46897E007625A2 /* HeaderEditorView.swift */; };
 		1801FFF72D491686007625A2 /* PostListEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1801FFF62D491686007625A2 /* PostListEditorView.swift */; };
 		1801FFF92D4A6675007625A2 /* PlusButtonEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1801FFF82D4A6675007625A2 /* PlusButtonEditorView.swift */; };
+		1801FFFB2D4CED45007625A2 /* TestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1801FFFA2D4CED45007625A2 /* TestView.swift */; };
 		189F952C2D43BBC50066E6CF /* todoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 189F952B2D43BBC50066E6CF /* todoApp.swift */; };
 		189F95302D43BBC70066E6CF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 189F952F2D43BBC70066E6CF /* Assets.xcassets */; };
 		189F95332D43BBC70066E6CF /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 189F95322D43BBC70066E6CF /* Preview Assets.xcassets */; };
@@ -62,6 +63,7 @@
 		1801FFF42D46897E007625A2 /* HeaderEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeaderEditorView.swift; sourceTree = "<group>"; };
 		1801FFF62D491686007625A2 /* PostListEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostListEditorView.swift; sourceTree = "<group>"; };
 		1801FFF82D4A6675007625A2 /* PlusButtonEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlusButtonEditorView.swift; sourceTree = "<group>"; };
+		1801FFFA2D4CED45007625A2 /* TestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestView.swift; sourceTree = "<group>"; };
 		189F95282D43BBC50066E6CF /* todo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = todo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		189F952B2D43BBC50066E6CF /* todoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = todoApp.swift; sourceTree = "<group>"; };
 		189F952F2D43BBC70066E6CF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -142,6 +144,7 @@
 				189F952B2D43BBC50066E6CF /* todoApp.swift */,
 				1801FFEE2D45DC8E007625A2 /* CalendarView.swift */,
 				1801FFEC2D45DC6F007625A2 /* TodoListView.swift */,
+				1801FFFA2D4CED45007625A2 /* TestView.swift */,
 				1801FFEA2D45DC50007625A2 /* AddPostView.swift */,
 				1801FFE62D45DBF9007625A2 /* TodoViewModel.swift */,
 				1801FFE82D45DC28007625A2 /* TopView.swift */,
@@ -489,6 +492,7 @@
 				189F95562D43BFB60066E6CF /* AuthManager.swift in Sources */,
 				1801FFE32D45DB77007625A2 /* UserSettingsViewModel.swift in Sources */,
 				1801FFED2D45DC6F007625A2 /* TodoListView.swift in Sources */,
+				1801FFFB2D4CED45007625A2 /* TestView.swift in Sources */,
 				189F952C2D43BBC50066E6CF /* todoApp.swift in Sources */,
 				1801FFEB2D45DC50007625A2 /* AddPostView.swift in Sources */,
 				1801FFEF2D45DC8E007625A2 /* CalendarView.swift in Sources */,
