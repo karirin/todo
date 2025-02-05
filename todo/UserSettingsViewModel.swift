@@ -19,6 +19,7 @@ struct HeaderSettings: Codable {
     var headerImageName: String?
     var headerText: String
     var headerTextColor: String // 新規追加: Hexコードで保存
+    var headerOpacityFlag: Bool
 }
 
 struct ButtonSettings: Codable {
@@ -31,6 +32,7 @@ struct PostListSettings: Codable {
     var postListImageName: String? // Optional: Image name from assets
     var postListTextColor: String // Hex string
     var isReorderEnabled: Bool // 並び替え機能の有効化
+    var postListOpacityFlag: Bool
 }
 
 struct PlusButtonSettings: Codable { // 新規追加
@@ -48,9 +50,9 @@ struct UserSettings: Codable {
     
     init(
         background: BackgroundSettings = BackgroundSettings(backgroundColor: "#FFFFFF", backgroundImageName: nil),
-        header: HeaderSettings = HeaderSettings(headerColor: "#FFFFFF", headerImageName: nil, headerText: "TODO一覧", headerTextColor: "#000000"),
+        header: HeaderSettings = HeaderSettings(headerColor: "#FFFFFF", headerImageName: nil, headerText: "TODO一覧", headerTextColor: "#000000", headerOpacityFlag: false),
         button: ButtonSettings = ButtonSettings(buttonColor: "#FFFFFF", buttonImageName: nil),
-        postList: PostListSettings = PostListSettings(postListColor: "#FFFFFF", postListImageName: nil, postListTextColor: "#000000", isReorderEnabled: true),
+        postList: PostListSettings = PostListSettings(postListColor: "#FFFFFF", postListImageName: nil, postListTextColor: "#000000", isReorderEnabled: true, postListOpacityFlag: false),
         plusButton: PlusButtonSettings = PlusButtonSettings(plusButtonColor: "#000000", plusButtonImageName: nil)
     ) {
         self.background = background
@@ -69,14 +71,17 @@ class UserSettingsViewModel: ObservableObject {
     @Published var headerImageName: String? = nil
     @Published var headerText: String = "TODO一覧"
     @Published var headerTextColor: Color = .black
+    @Published var headerOpacityFlag: Bool = false
     @Published var buttonColor: Color = .white
     @Published var buttonImageName: String? = nil
     @Published var postListColor: Color = .white
     @Published var postListTextColor: Color = .black
     @Published var postListImageName: String? = nil
+    @Published var postListOpacityFlag: Bool = false
     @Published var isReorderEnabled: Bool = true
     @Published var plusButtonColor: Color = .black
     @Published var plusButtonImageName: String? = nil
+    @Published var presets: [String: UserSettings] = [:]
     
     private var ref: DatabaseReference
     private var handle: DatabaseHandle?
@@ -93,10 +98,12 @@ class UserSettingsViewModel: ObservableObject {
             self.headerImageName = mock.header.headerImageName
             self.headerText = mock.header.headerText
             self.headerTextColor = Color(hex: mock.header.headerTextColor)
+            self.headerOpacityFlag = mock.header.headerOpacityFlag
             self.buttonColor = Color(hex: mock.button.buttonColor)
             self.buttonImageName = mock.button.buttonImageName
             self.postListColor = Color(hex: mock.postList.postListColor)
             self.postListImageName = mock.postList.postListImageName
+            self.postListOpacityFlag = mock.postList.postListOpacityFlag
             self.isReorderEnabled = mock.postList.isReorderEnabled
             self.postListTextColor = Color(hex: mock.postList.postListTextColor)
             self.plusButtonColor = Color(hex: mock.plusButton.plusButtonColor)
@@ -105,6 +112,7 @@ class UserSettingsViewModel: ObservableObject {
             // 初期設定
             self.settings = UserSettings()
             self.fetchSettings()
+            self.fetchPresets()
         }
     }
     
@@ -156,11 +164,12 @@ class UserSettingsViewModel: ObservableObject {
                 if let headerDict = dict["header"] as? [String: Any],
 //                   let headerColor = headerDict["headerColor"] as? String,
                    let headerText = headerDict["headerText"] as? String,
-                   let headerTextColorHex = headerDict["headerTextColor"] as? String {
+                   let headerTextColorHex = headerDict["headerTextColor"] as? String,
+                   let headerOpacityFlag = headerDict["headerOpacityFlag"] as? Bool{
                     DispatchQueue.main.async {
                         self.headerText = headerText
                         self.headerTextColor = Color(hex: headerTextColorHex)
-                        print("self.headerTextColor     :\(self.headerTextColor)")
+                        self.headerOpacityFlag = headerOpacityFlag
                     }
                 }
                 if let headerImageName = (dict["header"] as? [String: Any])?["headerImageName"] as? String {
@@ -178,11 +187,14 @@ class UserSettingsViewModel: ObservableObject {
                 // 投稿一覧設定
                 if let postListDict = dict["postList"] as? [String: Any],
                    let postListColor = postListDict["postListColor"] as? String,
-                   let postListTextColor = postListDict["postListTextColor"] as? String {
+                   let postListTextColor = postListDict["postListTextColor"] as? String,
+                   let postListOpacityFlag = postListDict["postListOpacityFlag"] as? Bool {
                     DispatchQueue.main.async {
                         self.settings.postList.postListColor = postListColor
                         self.postListColor = Color(hex: postListColor)
                         self.postListTextColor = Color(hex: postListTextColor)
+                        self.postListOpacityFlag = postListOpacityFlag
+                        print("self.postListOpacityFlag1     :\(self.postListOpacityFlag)")
                     }
                 }
                 if let postListImageName = (dict["postList"] as? [String: Any])?["postListImageName"] as? String {
@@ -228,12 +240,14 @@ class UserSettingsViewModel: ObservableObject {
                     self.headerImageName = nil
                     self.headerText = "TODO一覧"
                     self.headerTextColor = .black
+                    self.headerOpacityFlag = false
                     self.buttonColor = .white
                     self.buttonImageName = nil
                     self.postListColor = .white
                     self.postListImageName = nil
                     self.isReorderEnabled = true
                     self.postListTextColor = .black
+                    self.postListOpacityFlag = false
                     self.plusButtonColor = .black
                     self.plusButtonImageName = nil
                     print("設定が存在しないため、デフォルト値を適用")
@@ -242,6 +256,75 @@ class UserSettingsViewModel: ObservableObject {
         })
     }
     
+    func fetchPresets() {
+        // presets 以下に保存したデータを一度取得する
+        ref.child("presets").observeSingleEvent(of: .value) { snapshot in
+            var newPresets: [String: UserSettings] = [:]
+            if let dict = snapshot.value as? [String: Any] {
+                for (presetName, presetData) in dict {
+                    // 各プリセット情報を JSON -> UserSettings にデコード
+                    if let presetDict = presetData as? [String: Any],
+                       let jsonData = try? JSONSerialization.data(withJSONObject: presetDict, options: []),
+                       let userSettings = try? JSONDecoder().decode(UserSettings.self, from: jsonData) {
+                        newPresets[presetName] = userSettings
+                    }
+                }
+            }
+            DispatchQueue.main.async {
+                self.presets = newPresets
+            }
+        }
+    }
+    
+    func loadPreset(name: String) {
+        ref.child("presets").child(name).observeSingleEvent(of: .value) { snapshot in
+            if let presetDict = snapshot.value as? [String: Any],
+               let jsonData = try? JSONSerialization.data(withJSONObject: presetDict, options: []),
+               let userSettings = try? JSONDecoder().decode(UserSettings.self, from: jsonData) {
+                DispatchQueue.main.async {
+                    // ViewModel内の各プロパティを更新
+                    self.settings = userSettings
+                    self.backgroundColor = Color(hex: userSettings.background.backgroundColor)
+                    self.backgroundImageName = userSettings.background.backgroundImageName
+                    
+                    self.headerColor = Color(hex: userSettings.header.headerColor)
+                    self.headerImageName = userSettings.header.headerImageName
+                    self.headerText = userSettings.header.headerText
+                    self.headerTextColor = Color(hex: userSettings.header.headerTextColor)
+                    self.headerOpacityFlag = userSettings.header.headerOpacityFlag
+                    
+                    self.buttonColor = Color(hex: userSettings.button.buttonColor)
+                    self.buttonImageName = userSettings.button.buttonImageName
+                    
+                    self.postListColor = Color(hex: userSettings.postList.postListColor)
+                    self.postListImageName = userSettings.postList.postListImageName
+                    self.postListTextColor = Color(hex: userSettings.postList.postListTextColor)
+                    self.isReorderEnabled = userSettings.postList.isReorderEnabled
+                    self.postListOpacityFlag = userSettings.postList.postListOpacityFlag
+                    
+                    self.plusButtonColor = Color(hex: userSettings.plusButton.plusButtonColor)
+                    self.plusButtonImageName = userSettings.plusButton.plusButtonImageName
+                    
+                    // ここで preset の内容を settings テーブル直下に更新
+                    if let data = try? JSONEncoder().encode(userSettings),
+                       let dict = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                        // updateChildValues() を使うと、既存の presets ノードはそのまま残ります。
+                        self.ref.updateChildValues(dict) { error, _ in
+                            if let error = error {
+                                print("Preset適用に失敗しました: \(error.localizedDescription)")
+                            } else {
+                                print("Preset適用成功")
+                            }
+                        }
+                    }
+                }
+            } else {
+                print("Preset「\(name)」の読み込みに失敗しました")
+            }
+        }
+    }
+
+
     /// 背景色を更新
     func updateBackgroundColor(_ color: Color) {
         guard let hexString = color.toHex() else {
@@ -312,6 +395,28 @@ class UserSettingsViewModel: ObservableObject {
         }
     }
     
+    func savePreset(name: String) {
+        let presetRef = ref.child("presets").child(name)
+        do {
+            // 現在の settings をエンコード
+            let data = try JSONEncoder().encode(self.settings)
+            // エンコードしたデータを Dictionary ([String: Any]) に変換
+            if let dict = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                // Firebase に保存
+                presetRef.setValue(dict) { error, _ in
+                    if let error = error {
+                        print("Presetの保存に失敗しました: \(error.localizedDescription)")
+                    } else {
+                        print("Preset「\(name)」を保存しました")
+                    }
+                }
+            }
+        } catch {
+            print("Presetのエンコードに失敗しました: \(error.localizedDescription)")
+        }
+    }
+
+    
     /// ヘッダー画像を更新
     func updateHeaderImage(named imageName: String) {
         settings.header.headerImageName = imageName
@@ -346,6 +451,17 @@ class UserSettingsViewModel: ObservableObject {
                 print("Failed to update headerText: \(error.localizedDescription)")
             } else {
                 print("Successfully updated headerText to \(text)")
+            }
+        }
+    }
+    
+    func updateHeaderOpacityFlag(_ bool: Bool) {
+        settings.header.headerOpacityFlag = bool
+        ref.child("header/headerOpacityFlag").setValue(bool) { error, _ in
+            if let error = error {
+                print("Failed to update headerText: \(error.localizedDescription)")
+            } else {
+                print("Successfully updated headerText to \(bool)")
             }
         }
     }
@@ -417,6 +533,17 @@ class UserSettingsViewModel: ObservableObject {
                 print("Failed to update postListImageName: \(error.localizedDescription)")
             } else {
                 print("Successfully updated postListImageName to \(imageName)")
+            }
+        }
+    }
+    
+    func updatePostListOpacityFlag(_ bool: Bool) {
+        settings.postList.postListOpacityFlag = bool
+        ref.child("postList/postListOpacityFlag").setValue(bool) { error, _ in
+            if let error = error {
+                print("Failed to update headerText: \(error.localizedDescription)")
+            } else {
+                print("Successfully updated headerText to \(bool)")
             }
         }
     }

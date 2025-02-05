@@ -13,6 +13,8 @@ struct PostListEditorView: View {
     @State private var selectedColor: Color = Color.white
     @Environment(\.presentationMode) var presentationMode
     @State private var selectedTextColor: Color = .black
+    @State private var postListOpacityFlag: Bool = false
+    @State private var isInitializing: Bool = true
     
     let predefinedColors: [Color] = [
         .white, .black, .gray, .red, .orange, .yellow, .green, .blue, .purple, .brown
@@ -92,6 +94,14 @@ struct PostListEditorView: View {
                 }
             }
             .padding(.horizontal)
+            Toggle("文字を見やすくする", isOn:
+                Binding(
+                    get: { userSettingsViewModel.postListOpacityFlag },
+                    set: { newValue in
+                        userSettingsViewModel.updatePostListOpacityFlag(newValue)
+                    }
+                )
+            ).padding(.horizontal,20)
                 // 投稿一覧の背景画像セクション
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
@@ -198,6 +208,9 @@ struct PostListEditorView: View {
                 filteredImageNames = predefinedBackgroundImageNames
                 print("色カテゴリが見つからなかったため、全ての画像を表示")
             }
+            DispatchQueue.main.async {
+                isInitializing = false
+            }
         }
         .sheet(isPresented: $isColorSheetPresented) {
             VStack(spacing: 20) {
@@ -303,8 +316,8 @@ struct PostListEditorView: View {
 struct PostListEditorView_Previews: PreviewProvider {
     static var previews: some View {
         PostListEditorView(
-            todoViewModel: TodoViewModel(userID: "mockUserID"),
-            userSettingsViewModel: UserSettingsViewModel(userID: "mockUserID")
+            todoViewModel: TodoViewModel(userID: AuthManager().currentUserId!),
+            userSettingsViewModel: UserSettingsViewModel(userID: AuthManager().currentUserId!)
         )
     }
 }

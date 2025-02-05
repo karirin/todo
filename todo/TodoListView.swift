@@ -23,7 +23,7 @@ struct TodoRowView: View {
         HStack {
             // チェックボタン
             Image(systemName: item.isCompleted ? "checkmark.circle.fill" : "circle")
-                .foregroundColor(item.isCompleted ? .green : .gray)
+                .foregroundColor(item.isCompleted ? .green : .black)
                 .onTapGesture {
                     if isCustomizationMode {
                         activeSheet = .postListEditor
@@ -31,6 +31,8 @@ struct TodoRowView: View {
                         todoViewModel.toggleCompletion(of: item)
                     }
                 }
+                .background(Color("backgroundColor").opacity(userSettingsViewModel.postListOpacityFlag ? 0.5 : 0))
+                .cornerRadius(10)
                 .padding(.trailing, 10)
             
             // タイトルと期限日
@@ -41,6 +43,8 @@ struct TodoRowView: View {
                         .fontWeight(.bold)
                         .strikethrough(item.isCompleted, color: .black)
                         .foregroundColor(item.isCompleted ? .gray : userSettingsViewModel.postListTextColor)
+                        .background(Color("backgroundColor").opacity(userSettingsViewModel.postListOpacityFlag ? 0.5 : 0))
+//                        .cornerRadius(5)
                     HStack {
                         Image(systemName: "calendar.circle")
                             .font(.system(size: 16))
@@ -49,7 +53,11 @@ struct TodoRowView: View {
                             .font(.system(size: 16))
                     }
                     .foregroundColor(item.isCompleted ? .gray : userSettingsViewModel.postListTextColor)
+                    .background(Color("backgroundColor").opacity(userSettingsViewModel.postListOpacityFlag ? 0.5 : 0))
+//                    .cornerRadius(5)
                 }
+                .padding(5)
+                .cornerRadius(5)
                 Spacer()
             }
             .frame(maxWidth: .infinity)
@@ -70,7 +78,10 @@ struct TodoRowView: View {
             }) {
                 Image(systemName: "trash")
                     .foregroundColor(.red)
+                    .font(.system(size: 20))
             }
+            .background(Color("backgroundColor").opacity(userSettingsViewModel.postListOpacityFlag ? 0.5 : 0))
+            .cornerRadius(5)
             .padding(.trailing, 10)
             // ドラッグハンドル
             //        Image(systemName: "line.horizontal.3")
@@ -180,9 +191,10 @@ struct TodoListView: View {
                         Button(action: {
                             isCustomizationMode.toggle()
                         }) {
-                            Image(systemName: isCustomizationMode ? "pencil.circle.fill" : "pencil.circle")
-                                .font(.title)
-                                .foregroundColor(isCustomizationMode ? .red : .white)
+                            Image(isCustomizationMode ? "編集中" : "編集前" )
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height:50)
                                 .zIndex(isCustomizationMode ? 1 : 0)
                         }
                         .padding(.leading)
@@ -190,15 +202,19 @@ struct TodoListView: View {
                         Spacer()
                         Text(userSettingsViewModel.headerText)
                             .foregroundColor(userSettingsViewModel.headerTextColor)
-                            .font(.system(size: 20))
+                            .font(.system(size: 24))
                             .fontWeight(.bold)
+                            .padding(.horizontal,5)
+                            .background(Color("backgroundColor").opacity(userSettingsViewModel.headerOpacityFlag ? 0.5 : 0))
+                            .cornerRadius(10)
                         Spacer()
                         Button(action: {
                             isCustomizationMode.toggle()
                         }) {
-                            Image(systemName: isCustomizationMode ? "pencil.circle.fill" : "pencil.circle")
-                                .font(.title)
-                                .foregroundColor(isCustomizationMode ? .red : .white)
+                            Image(isCustomizationMode ? "編集中" : "編集前" )
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height:50)
                                 .zIndex(isCustomizationMode ? 1 : 0)
                         }
                         .padding(.trailing)
@@ -228,9 +244,6 @@ struct TodoListView: View {
                             activeSheet = .headerEditor
                         }
                     }
-//                    RoundedCorner(radius: isSmallDevice() ? 0 : 230, corners: [.topLeft, .topRight])
-//                        .stroke(isCustomizationMode ? Color.yellow : Color.clear, lineWidth: 15)
-//                        .frame(maxWidth: .infinity, maxHeight: 60)
                 }
                 VStack(spacing: 10) {
                     ForEach(todoViewModel.items) { item in
@@ -290,7 +303,7 @@ struct TodoListView: View {
                                         .clipShape(Circle())
                                 }
                             }
-                            .shadow(radius: 3)
+                            .shadow(radius: 10)
                             .padding()
                             .shadow(color: isCustomizationMode ? Color.black : Color.clear, radius: 10)
                         }

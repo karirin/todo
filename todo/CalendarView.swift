@@ -44,8 +44,9 @@ struct CalendarView: View {
                         Image(systemName: "chevron.right")
                             .padding()
                     }
-                }.foregroundColor(.black)
-                    .background(
+                }
+                .foregroundColor(.black)
+                .background(
                         Group {
                             if let headerImageName = userSettingsViewModel.headerImageName,
                                let uiImage = UIImage(named: headerImageName) {
@@ -60,55 +61,50 @@ struct CalendarView: View {
                     )
                 // Weekday Labels
                 VStack {
-                let japaneseWeekdays = ["日", "月", "火", "水", "木", "金", "土"]
-                HStack {
-                    ForEach(japaneseWeekdays, id: \.self) { day in
-                        Text(day)
-                            .frame(maxWidth: .infinity)
-                            .fontWeight(.bold)
-                            .foregroundColor(.black)
+                    let japaneseWeekdays = ["日", "月", "火", "水", "木", "金", "土"]
+                    HStack {
+                        ForEach(japaneseWeekdays, id: \.self) { day in
+                            Text(day)
+                                .frame(maxWidth: .infinity)
+                                .fontWeight(.bold)
+                                .foregroundColor(.black)
+                        }
                     }
-                }
-                // Date Grid
-                let daysInMonth = generateDaysInMonth(for: currentDate)
-                let columns = Array(repeating: GridItem(.flexible()), count: 7)
-                
-                LazyVGrid(columns: columns, spacing: 10) {
-                    ForEach(daysInMonth, id: \.self) { date in
-                        if let date = date {
-                            let hasTodo = todoViewModel.items.contains { Calendar.current.isDate($0.dueDate, inSameDayAs: date) }
-                            
-                            Button(action: {
-                                selectedDate = date
-                            }) {
-                                VStack {
-                                    Text("\(Calendar.current.component(.day, from: date))")
-                                        .foregroundColor(Calendar.current.isDate(date, inSameDayAs: Date()) ? .red : .primary)
-                                        .fontWeight(Calendar.current.isDate(date, inSameDayAs: Date()) ? .bold : .regular)
-                                    if hasTodo {
-                                        Circle()
-                                            .fill(Color.blue)
-                                            .frame(width: 6, height: 6)
+                    .padding(.top)
+                    // Date Grid
+                    let daysInMonth = generateDaysInMonth(for: currentDate)
+                    let columns = Array(repeating: GridItem(.flexible()), count: 7)
+                    
+                    LazyVGrid(columns: columns, spacing: 10) {
+                        ForEach(daysInMonth, id: \.self) { date in
+                            if let date = date {
+                                let hasTodo = todoViewModel.items.contains { Calendar.current.isDate($0.dueDate, inSameDayAs: date) }
+                                
+                                Button(action: {
+                                    selectedDate = date
+                                }) {
+                                    VStack {
+                                        Text("\(Calendar.current.component(.day, from: date))")
+                                            .foregroundColor(Calendar.current.isDate(date, inSameDayAs: Date()) ? .red : .primary)
+                                            .fontWeight(Calendar.current.isDate(date, inSameDayAs: Date()) ? .bold : .regular)
+                                        if hasTodo {
+                                            Circle()
+                                                .fill(Color.blue)
+                                                .frame(width: 6, height: 6)
+                                        }
                                     }
+                                    .padding(8)
+                                    .background(
+                                        Calendar.current.isDate(date, inSameDayAs: selectedDate ?? Date()) ?
+                                        Color.blue.opacity(0.3) :
+                                            Color.clear
+                                    )
+                                    .cornerRadius(8)
                                 }
-                                .padding(8)
-                                .background(
-                                    Calendar.current.isDate(date, inSameDayAs: selectedDate ?? Date()) ?
-                                    Color.blue.opacity(0.3) :
-                                        Color.clear
-                                )
-                                .cornerRadius(8)
                             }
-                        } else {
-                            // Empty Cell for Placeholder Dates
-                            Text("")
-                                .padding(8)
                         }
                     }
                 }
-                .padding()
-            }
-                .padding(.top)
                 .background(Color("backgroundColor"))
                 .padding(.top, -15)
                 
@@ -121,6 +117,7 @@ struct CalendarView: View {
                             Text("\(formattedDate(selectedDate))")
                                 .font(.headline)
                         }
+                        .padding(.horizontal)
                         .background(Color("backgroundColor"))
                         .cornerRadius(30)
                         Spacer()
@@ -135,7 +132,8 @@ struct CalendarView: View {
                         Text("この日にTodoはありません")
                             .foregroundColor(.black)
                             .fontWeight(.bold)
-                            .padding()
+                            .padding(.horizontal)
+                            .padding(.vertical, 10)
                             .background(Color("backgroundColor"))
                             .cornerRadius(30)
                     } else {
@@ -173,7 +171,8 @@ struct CalendarView: View {
                                 }
                             )
                             .cornerRadius(8)
-                            .padding()
+                            .padding(.horizontal)
+                            .padding(.bottom, 10)
                             .onTapGesture {
                                 todoViewModel.toggleCompletion(of: item)
                             }

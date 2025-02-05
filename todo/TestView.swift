@@ -20,7 +20,7 @@ struct LightningShape: Shape {
 struct LightningAnimationView: View {
     @State private var moveDown = false
     @State private var currentColorIndex = 0
-    @State private var timer: Timer? = nil // タイマーを管理するための状態変数
+    @State private var timer: Timer? = nil
     let colors: [Color] = [.yellow, .blue, .red, .green, .purple]
     
     var body: some View {

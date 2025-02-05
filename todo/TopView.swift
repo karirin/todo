@@ -22,13 +22,11 @@ struct TopView: View {
                 .tabItem {
                     Label("Todo", systemImage: "checkmark.circle")
                 }
-            
             CalendarView(todoViewModel: todoViewModel, userSettingsViewModel: userSettingsViewModel)
                 .tabItem {
                     Label("Calendar", systemImage: "calendar")
                 }
-            
-            SettingsView(userSettingsViewModel: userSettingsViewModel)
+            PresetEditorView(userSettingsViewModel: userSettingsViewModel)
                 .tabItem {
                     Label("Settings", systemImage: "gear")
                 }

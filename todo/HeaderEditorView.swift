@@ -22,6 +22,7 @@ struct HeaderEditorView: View {
     @State private var headerTextColor: Color = .black // デフォルトを黒に設定
     @State private var selectedTextColorHex: String = "#000000" // 選択されたテキスト色のHexコード
     @State private var isInitializing: Bool = true
+    @State private var headerOpacityFlag: Bool = false
 
     let predefinedColorHexes: [String] = [
         "#FFFFFF", // White
@@ -140,6 +141,14 @@ struct HeaderEditorView: View {
                     }
                 }
             }
+            
+            Toggle("文字を見やすくする", isOn: $headerOpacityFlag)
+                .font(.headline)
+                .padding(.horizontal)
+                .onChange(of: headerOpacityFlag) { newValue in
+                    if isInitializing { return }
+                    userSettingsViewModel.updateHeaderOpacityFlag(newValue)
+                }
             //            VStack(alignment: .leading, spacing: 10) {
             //                HStack {
             //                    Spacer()
@@ -289,6 +298,7 @@ struct HeaderEditorView: View {
                 self.headerColor = userSettingsViewModel.headerColor
                 self.headerTextColor = userSettingsViewModel.headerTextColor
                 self.headerImageName = userSettingsViewModel.headerImageName
+                self.headerOpacityFlag = userSettingsViewModel.headerOpacityFlag
                         // 現在の背景色のHexコードを選択状態に反映
             //            selectedColor = Color(hex: userSettingsViewModel.settings.backgroundColor)
                         if let category = closestColorCategory(to: selectedColor) {
