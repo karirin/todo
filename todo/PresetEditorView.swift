@@ -12,6 +12,10 @@ struct PresetEditorView: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var presetName: String = ""
     @State private var addFlag = false
+    @FocusState private var isTextFieldFocused: Bool
+    @State private var showChangeAlert = false
+    @State private var selectedPresetKey: String? = nil
+    @State private var showDeleteAlert = false
     
     var body: some View {
         VStack {
@@ -125,7 +129,8 @@ struct PresetEditorView: View {
                         ForEach(Array(userSettingsViewModel.presets.keys).sorted(), id: \.self) { key in
                             if let preset = userSettingsViewModel.presets[key] {
                                 Button(action: {
-                                    userSettingsViewModel.loadPreset(name: key)
+                                    selectedPresetKey = key
+                                    showChangeAlert = true
                                 }) {
                                     ZStack {
                                        VStack{
@@ -226,6 +231,21 @@ struct PresetEditorView: View {
                                        .frame(width: 100,height: 250)
                                    .cornerRadius(10)
                                    .shadow(radius: 3)
+                                   .overlay(
+                                       VStack() {
+                                           Spacer()
+                                           HStack{
+                                               Button(action: {
+                                                   selectedPresetKey = key
+                                                   showDeleteAlert = true
+                                               }) {
+                                                   Image(systemName: "trash.square.fill")
+                                                       .font(.system(size: 30))
+                                               }
+                                               Spacer()
+                                           }
+                                       }.padding(.bottom)
+                                   )
                                 }
                             }
                         }
@@ -234,31 +254,131 @@ struct PresetEditorView: View {
             }
         }
         .background(Color("backgroundColor"))
-        .sheet(isPresented: $addFlag) {
-            // 現在の設定をプリセットとして保存するセクション
-            VStack(alignment: .leading, spacing: 10) {
-                Text("現在の設定をプリセットとして保存")
-                    .font(.headline)
-                HStack {
-                    TextField("プリセット名を入力", text: $presetName)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                    Button(action: {
-                        // 入力が空でなければ保存
-                        guard !presetName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
-                        userSettingsViewModel.savePreset(name: presetName)
-                        presetName = ""
-                        userSettingsViewModel.fetchPresets()
-                    }) {
-                        Text("保存")
-                            .padding(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-                            .background(Color.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(8)
+        .onChange(of: addFlag) { newValue in
+            if newValue {
+                isTextFieldFocused = true
+            }
+        }
+        .overlay(
+            Group {
+                if addFlag {
+                    ZStack {
+                        // 背景を薄暗くしてタップをブロック
+                        Color.black
+                            .opacity(0.4)
+                            .edgesIgnoringSafeArea(.all)
+
+                        VStack(alignment: .center, spacing: 16) {
+                            Text("現在設定しているカスタマイズを\n保存しますか？")
+                                .font(.system(size:17))
+                                .fontWeight(.bold)
+                            HStack {
+                                // キャンセルボタン
+                                Button("戻る") {
+                                    presetName = ""
+                                    addFlag = false
+                                }
+
+                                Spacer()
+
+                                // 保存ボタン
+                                Button("保存") {
+                                    userSettingsViewModel.savePreset()
+                                    userSettingsViewModel.fetchPresets()
+                                    addFlag = false
+                                }
+                            }
+                        }
+                        .padding()
+                        .frame(maxWidth: 300)
+                        .background(Color("backgroundColor"))
+                        .cornerRadius(10)
+                        .shadow(radius: 10)
                     }
                 }
+                if showChangeAlert,
+                   let presetKey = selectedPresetKey,
+                   let preset = userSettingsViewModel.presets[presetKey] {
+                        ZStack {
+                            // 背景を薄暗くしてタップをブロック
+                            Color.black
+                                .opacity(0.4)
+                                .edgesIgnoringSafeArea(.all)
+                            
+                            VStack(spacing: 16) {
+                                Text("このカスタマイズに変更しますか？")
+                                    .font(.system(size: 17))
+                                    .fontWeight(.bold)
+                                    .padding(.horizontal,-20)
+                                Text("保存しないと今のカスタマイズが無くなります")
+                                    .font(.caption)
+                                PresetDetailView(preset: preset)
+                                
+                                HStack {
+                                    Button("やめる") {
+                                        showChangeAlert = false
+                                        selectedPresetKey = nil
+                                    }
+                                    Spacer()
+                                    Button("変更") {
+                                        if let presetKey = selectedPresetKey {
+                                            
+                                            print("presetKey      :\(presetKey)")
+                                            userSettingsViewModel.loadPreset(name: presetKey)
+                                        }
+                                        userSettingsViewModel.fetchPresets()
+                                        showChangeAlert = false
+                                        selectedPresetKey = nil
+                                    }
+                                }
+                            }
+                            .padding()
+                            .frame(maxWidth: 330)
+                            .background(Color("backgroundColor"))
+                            .cornerRadius(10)
+                            .shadow(radius: 10)
+                        }
+                    }
+                if showDeleteAlert,
+                   let presetKey = selectedPresetKey,
+                   let preset = userSettingsViewModel.presets[presetKey] {
+                     ZStack {
+                         // 背景を薄暗くしてタップをブロック
+                         Color.black
+                             .opacity(0.4)
+                             .edgesIgnoringSafeArea(.all)
+                         
+                         VStack(spacing: 16) {
+                             Text("このカスタマイズを削除しますか？")
+                                 .font(.system(size:17))
+                                 .fontWeight(.bold)
+                                 .padding(.horizontal,-20)
+                             PresetDetailView(preset: preset)
+                             HStack {
+                                 Button("キャンセル") {
+                                     showDeleteAlert = false
+                                    selectedPresetKey = nil
+                                 }
+                                 Spacer()
+                                 Button("削除") {
+                                     if let key = selectedPresetKey {
+                                         userSettingsViewModel.deletePreset(name: key)
+                                         userSettingsViewModel.fetchPresets()
+                                     }
+                                    showDeleteAlert = false
+                                    selectedPresetKey = nil
+                                 }
+                             }
+                         }
+                         .padding()
+                         .frame(maxWidth: 300)
+                         .background(Color("backgroundColor"))
+                         .cornerRadius(10)
+                         .shadow(radius: 10)
+                     }
+                }
             }
-            .padding()
-        }
+        )
     }
 }
 

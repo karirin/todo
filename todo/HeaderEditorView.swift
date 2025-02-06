@@ -92,27 +92,6 @@ struct HeaderEditorView: View {
             }
             .padding(.horizontal)
             
-            // ヘッダーテキスト色の編集
-//            VStack(alignment: .leading, spacing: 10) {
-//                HStack {
-//                    Spacer()
-//                    Text("ヘッダーの文字色")
-//                        .font(.headline)
-//                    Spacer()
-//                }
-//                ColorPicker("文字色を選択", selection: $headerTextColor)
-//                    .padding(.trailing, 20)
-//                    .onChange(of: headerTextColor) { newColor in
-//                        if isInitializing { return }
-//                        userSettingsViewModel.updateHeaderTextColor(newColor)
-//                        
-//                        // 選択された色のHexコードを更新
-//                        if let hex = newColor.toHex() {
-//                            selectedTextColorHex = hex
-//                        }
-//                    }
-//            }
-//            .padding(.horizontal)
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
                     Spacer()
@@ -128,9 +107,6 @@ struct HeaderEditorView: View {
                         ) {
                             withAnimation {
                                 if isInitializing { return }
-                                // まずヘッダーテキスト色をクリア（必要に応じて）
-                                // userSettingsViewModel.clearHeaderTextColor() // 必要なら実装
-                                
                                 // その後、ヘッダーテキスト色を更新
                                 selectedTextColorHex = hex
                                 let selectedTextColor = Color(hex: hex)
@@ -149,51 +125,7 @@ struct HeaderEditorView: View {
                     if isInitializing { return }
                     userSettingsViewModel.updateHeaderOpacityFlag(newValue)
                 }
-            //            VStack(alignment: .leading, spacing: 10) {
-            //                HStack {
-            //                    Spacer()
-            //                    Text("ヘッダーの色")
-            //                        .font(.headline)
-            //                    Spacer()
-            //                }
-            //                ColorPicker("色を選択", selection: $headerColor)
-            //                    .padding(.trailing, 20)
-            //                    .onChange(of: headerColor) { newColor in
-            //                        if isInitializing { return }
-            //                        if userSettingsViewModel.headerImageName != nil {
-            //                            userSettingsViewModel.clearHeaderImage()
-            //                        }
-            //                        userSettingsViewModel.updateHeaderColor(newColor)
-            //
-            //                        // 選択された色のHexコードを更新
-            //                        if let hex = newColor.toHex() {
-            //                            selectedColorHex = hex
-            //                        }
-            //                    }
-            //            }
-            //            .padding(.horizontal)
-            
-//                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 20) {
-//                    ForEach(predefinedColorHexes, id: \.self) { hex in
-//                        ColorButton(
-//                            hex: hex,
-//                            selectedHex: selectedColorHex
-//                        ) {
-//                            // まずヘッダー画像をクリア
-//                            if userSettingsViewModel.headerImageName != nil {
-//                                userSettingsViewModel.clearHeaderImage()
-//                            }
-//
-//                            // その後、ヘッダー色を更新
-//                            selectedColorHex = hex
-//                            let selectedColor = Color(hex: hex)
-//                            headerColor = selectedColor
-//                            userSettingsViewModel.updateHeaderColor(selectedColor)
-//                        }
-//                    }
-//                }
-//                .padding(.horizontal)
-            
+
             HStack {
                 Button(action: {
                     isHeaderSheetPresented = true
@@ -282,32 +214,17 @@ struct HeaderEditorView: View {
         }
         .padding()
         .background(Color("backgroundColor"))
-//            .navigationBarTitle("ヘッダー編集", displayMode: .inline)
-//            .navigationBarItems(trailing: Button("完了") {
-//                userSettingsViewModel.updateHeaderText(headerText)
-//                userSettingsViewModel.updateHeaderColor(headerColor)
-//                if let imageName = headerImageName {
-//                    userSettingsViewModel.updateHeaderImage(named: imageName)
-//                } else {
-//                    userSettingsViewModel.clearHeaderImage()
-//                }
-//                presentationMode.wrappedValue.dismiss()
-//            })
             .onAppear {
                 self.headerText = userSettingsViewModel.headerText
                 self.headerColor = userSettingsViewModel.headerColor
                 self.headerTextColor = userSettingsViewModel.headerTextColor
                 self.headerImageName = userSettingsViewModel.headerImageName
                 self.headerOpacityFlag = userSettingsViewModel.headerOpacityFlag
-                        // 現在の背景色のHexコードを選択状態に反映
-            //            selectedColor = Color(hex: userSettingsViewModel.settings.backgroundColor)
-                        if let category = closestColorCategory(to: selectedColor) {
-                            print("filteredImageNames = predefinedBackgroundImageNames1")
-                            filteredImageNames = predefinedBackgroundImageNames
-                        } else {
-                            print("filteredImageNames = predefinedBackgroundImageNames2")
-                            filteredImageNames = predefinedBackgroundImageNames
-                        }
+                if let category = closestColorCategory(to: selectedColor) {
+                    filteredImageNames = predefinedBackgroundImageNames
+                } else {
+                    filteredImageNames = predefinedBackgroundImageNames
+                }
                 DispatchQueue.main.async {
                     isInitializing = false
                 }
@@ -332,12 +249,6 @@ struct HeaderEditorView: View {
                                             selectedCategory = category
                                             filteredImageNames = predefinedBackgroundImageNames.filter { $0.hasPrefix(category.name) }
                                         }
-                                        
-                                        // 背景画像をクリア
-                                        userSettingsViewModel.clearBackgroundImage()
-                                        
-                                        // 背景色をデフォルトに戻す
-                                        userSettingsViewModel.updateBackgroundColor(Color(hex: "#FFFFFF"))
                                         
                                         // シートを閉じる
                                         isColorSheetPresented = false

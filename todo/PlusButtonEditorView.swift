@@ -208,12 +208,6 @@ struct PlusButtonEditorView: View {
                                         print("\(category.name) を選択")
                                     }
                                     
-                                    // 画像をクリア
-                                    userSettingsViewModel.clearPlusButtonImage()
-                                    
-                                    // 色をデフォルトに戻す（必要に応じて）
-                                    userSettingsViewModel.updatePlusButtonColor(Color.black)
-                                    
                                     // シートを閉じる
                                     isColorSheetPresented = false
                                 }

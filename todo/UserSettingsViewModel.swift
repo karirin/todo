@@ -395,8 +395,10 @@ class UserSettingsViewModel: ObservableObject {
         }
     }
     
-    func savePreset(name: String) {
-        let presetRef = ref.child("presets").child(name)
+    func savePreset() {
+        // Firebaseのpushキーを自動生成
+        let presetRef = ref.child("presets").childByAutoId()
+
         do {
             // 現在の settings をエンコード
             let data = try JSONEncoder().encode(self.settings)
@@ -407,7 +409,7 @@ class UserSettingsViewModel: ObservableObject {
                     if let error = error {
                         print("Presetの保存に失敗しました: \(error.localizedDescription)")
                     } else {
-                        print("Preset「\(name)」を保存しました")
+                        print("Presetを自動生成キーで保存しました")
                     }
                 }
             }
@@ -415,7 +417,16 @@ class UserSettingsViewModel: ObservableObject {
             print("Presetのエンコードに失敗しました: \(error.localizedDescription)")
         }
     }
-
+    
+    func deletePreset(name: String) {
+        ref.child("presets").child(name).removeValue { error, _ in
+            if let error = error {
+                print("Preset「\(name)」削除に失敗: \(error.localizedDescription)")
+            } else {
+                print("Preset「\(name)」を削除しました")
+            }
+        }
+    }
     
     /// ヘッダー画像を更新
     func updateHeaderImage(named imageName: String) {

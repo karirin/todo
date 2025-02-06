@@ -32,16 +32,28 @@ struct CalendarView: View {
                         currentDate = Calendar.current.date(byAdding: .month, value: -1, to: currentDate) ?? currentDate
                     }) {
                         Image(systemName: "chevron.left")
+                            .fontWeight(.bold)
+                            .padding(5)
+                            .background(Color("backgroundColor").opacity(userSettingsViewModel.headerOpacityFlag ? 0.6 : 0))
+                            .cornerRadius(10)
                             .padding()
                     }
                     Spacer()
                     Text(monthYearFormatter.string(from: currentDate))
-                        .font(.headline)
+                        .font(.system(size: 20))
+                        .fontWeight(.bold)
+                        .padding(.horizontal,5)
+                        .background(Color("backgroundColor").opacity(userSettingsViewModel.headerOpacityFlag ? 0.6 : 0))
+                        .cornerRadius(10)
                     Spacer()
                     Button(action: {
                         currentDate = Calendar.current.date(byAdding: .month, value: 1, to: currentDate) ?? currentDate
                     }) {
                         Image(systemName: "chevron.right")
+                            .fontWeight(.bold)
+                            .padding(5)
+                            .background(Color("backgroundColor").opacity(userSettingsViewModel.headerOpacityFlag ? 0.6 : 0))
+                            .cornerRadius(10)
                             .padding()
                     }
                 }
@@ -115,10 +127,11 @@ struct CalendarView: View {
                             Image(systemName: "calendar.circle")
                                 .font(.system(size: 20))
                             Text("\(formattedDate(selectedDate))")
-                                .font(.headline)
+                            
+                            .font(.system(size: 20))
                         }
-                        .padding(.horizontal)
-                        .background(Color("backgroundColor"))
+                        .padding(.horizontal, 5)
+                        .background(Color("backgroundColor").opacity(0.6))
                         .cornerRadius(30)
                         Spacer()
                     }
@@ -130,12 +143,13 @@ struct CalendarView: View {
                     
                     if filteredTodos.isEmpty {
                         Text("この日にTodoはありません")
+                            .font(.system(size: 20))
                             .foregroundColor(.black)
                             .fontWeight(.bold)
-                            .padding(.horizontal)
-                            .padding(.vertical, 10)
-                            .background(Color("backgroundColor"))
+                            .padding(.horizontal, 5)
+                            .background(Color("backgroundColor").opacity(0.6))
                             .cornerRadius(30)
+                            .padding(.top)
                     } else {
                         ForEach(filteredTodos) { item in
                             HStack {
@@ -146,9 +160,11 @@ struct CalendarView: View {
                                     }
                                 VStack(alignment: .leading) {
                                     Text(item.title)
-                                        .font(.system(size: 24))
+                                        .font(.system(size: 20))
+                                        .fontWeight(.bold)
                                         .strikethrough(item.isCompleted, color: .black)
-                                        .foregroundColor(item.isCompleted ? .gray : .black)
+                                        .foregroundColor(item.isCompleted ? .gray : userSettingsViewModel.postListTextColor)
+                                        .background(Color("backgroundColor").opacity(userSettingsViewModel.postListOpacityFlag ? 0.6 : 0))
                                 }
                                 Spacer()
                             }

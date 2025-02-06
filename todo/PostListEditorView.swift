@@ -235,12 +235,6 @@ struct PostListEditorView: View {
                                         print("\(category.name) を選択")
                                     }
                                     
-                                    // 背景画像をクリア
-                                    userSettingsViewModel.clearPostListImage()
-                                    
-                                    // 投稿一覧の色をデフォルトに戻す
-                                    userSettingsViewModel.updatePostListColor(Color(hex: "#FFFFFF"))
-                                    
                                     // シートを閉じる
                                     isColorSheetPresented = false
                                 }

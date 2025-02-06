@@ -31,7 +31,7 @@ struct TodoRowView: View {
                         todoViewModel.toggleCompletion(of: item)
                     }
                 }
-                .background(Color("backgroundColor").opacity(userSettingsViewModel.postListOpacityFlag ? 0.5 : 0))
+                .background(Color("backgroundColor").opacity(userSettingsViewModel.postListOpacityFlag ? 0.6 : 0))
                 .cornerRadius(10)
                 .padding(.trailing, 10)
             
@@ -43,7 +43,7 @@ struct TodoRowView: View {
                         .fontWeight(.bold)
                         .strikethrough(item.isCompleted, color: .black)
                         .foregroundColor(item.isCompleted ? .gray : userSettingsViewModel.postListTextColor)
-                        .background(Color("backgroundColor").opacity(userSettingsViewModel.postListOpacityFlag ? 0.5 : 0))
+                        .background(Color("backgroundColor").opacity(userSettingsViewModel.postListOpacityFlag ? 0.6 : 0))
 //                        .cornerRadius(5)
                     HStack {
                         Image(systemName: "calendar.circle")
@@ -53,7 +53,7 @@ struct TodoRowView: View {
                             .font(.system(size: 16))
                     }
                     .foregroundColor(item.isCompleted ? .gray : userSettingsViewModel.postListTextColor)
-                    .background(Color("backgroundColor").opacity(userSettingsViewModel.postListOpacityFlag ? 0.5 : 0))
+                    .background(Color("backgroundColor").opacity(userSettingsViewModel.postListOpacityFlag ? 0.6 : 0))
 //                    .cornerRadius(5)
                 }
                 .padding(5)
@@ -80,7 +80,7 @@ struct TodoRowView: View {
                     .foregroundColor(.red)
                     .font(.system(size: 20))
             }
-            .background(Color("backgroundColor").opacity(userSettingsViewModel.postListOpacityFlag ? 0.5 : 0))
+            .background(Color("backgroundColor").opacity(userSettingsViewModel.postListOpacityFlag ? 0.6 : 0))
             .cornerRadius(5)
             .padding(.trailing, 10)
             // ドラッグハンドル
@@ -205,7 +205,7 @@ struct TodoListView: View {
                             .font(.system(size: 24))
                             .fontWeight(.bold)
                             .padding(.horizontal,5)
-                            .background(Color("backgroundColor").opacity(userSettingsViewModel.headerOpacityFlag ? 0.5 : 0))
+                            .background(Color("backgroundColor").opacity(userSettingsViewModel.headerOpacityFlag ? 0.6 : 0))
                             .cornerRadius(10)
                         Spacer()
                         Button(action: {

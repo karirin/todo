@@ -175,12 +175,6 @@ struct BackgroundImageView: View {
                                         filteredImageNames = predefinedBackgroundImageNames.filter { $0.hasPrefix(category.name) }
                                     }
                                     
-                                    // 背景画像をクリア
-                                    userSettingsViewModel.clearBackgroundImage()
-                                    
-                                    // 背景色をデフォルトに戻す
-                                    userSettingsViewModel.updateBackgroundColor(Color(hex: "#FFFFFF"))
-                                    
                                     // シートを閉じる
                                     isColorSheetPresented = false
                                 }
