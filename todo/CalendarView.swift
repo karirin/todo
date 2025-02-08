@@ -29,6 +29,7 @@ struct CalendarView: View {
                 // Header: Month Navigation
                 HStack {
                     Button(action: {
+                        generateHapticFeedback()
                         currentDate = Calendar.current.date(byAdding: .month, value: -1, to: currentDate) ?? currentDate
                     }) {
                         Image(systemName: "chevron.left")
@@ -40,6 +41,7 @@ struct CalendarView: View {
                     }
                     Spacer()
                     Text(monthYearFormatter.string(from: currentDate))
+                        .foregroundColor(userSettingsViewModel.headerTextColor)
                         .font(.system(size: 20))
                         .fontWeight(.bold)
                         .padding(.horizontal,5)
@@ -47,6 +49,7 @@ struct CalendarView: View {
                         .cornerRadius(10)
                     Spacer()
                     Button(action: {
+                        generateHapticFeedback()
                         currentDate = Calendar.current.date(byAdding: .month, value: 1, to: currentDate) ?? currentDate
                     }) {
                         Image(systemName: "chevron.right")
@@ -93,6 +96,7 @@ struct CalendarView: View {
                                 let hasTodo = todoViewModel.items.contains { Calendar.current.isDate($0.dueDate, inSameDayAs: date) }
                                 
                                 Button(action: {
+                                    generateHapticFeedback()
                                     selectedDate = date
                                 }) {
                                     VStack {
@@ -199,6 +203,25 @@ struct CalendarView: View {
                 Spacer()
             }
         }
+        .gesture(
+            DragGesture(minimumDistance: 30)
+                .onEnded { value in
+                    if value.translation.width < 0 {
+                        // 左へスワイプ → 来月へ
+                        generateHapticFeedback()
+                        currentDate = Calendar.current.date(byAdding: .month, value: 1, to: currentDate) ?? currentDate
+                    } else if value.translation.width > 0 {
+                        // 右へスワイプ → 前月へ
+                        generateHapticFeedback()
+                        currentDate = Calendar.current.date(byAdding: .month, value: -1, to: currentDate) ?? currentDate
+                    }
+                }
+        )
+    }
+    
+    private func generateHapticFeedback() {
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
     }
     
     // Month and Year Formatter

@@ -13,6 +13,7 @@ struct AddPostView: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var selectedDate: Date = Date()
     @State private var isCalendarVisible: Bool = false // カレンダー表示の状態管理
+    @FocusState private var isTextFieldFocused: Bool
     
     var body: some View {
         ScrollView { // スクロールビューを追加して、キーボード表示時のレイアウト崩れを防ぐ
@@ -28,6 +29,7 @@ struct AddPostView: View {
                     .border(Color.clear, width: 0)
                     .font(.system(size: 20))
                     .cornerRadius(8)
+                    .focused($isTextFieldFocused)
                 Divider()
                 
                 // 日付選択用のボタン群
@@ -41,6 +43,7 @@ struct AddPostView: View {
                     
                     HStack(spacing: 15) {
                         Button(action: {
+                            generateHapticFeedback()
                             withAnimation {
                                 isCalendarVisible.toggle()
                             }
@@ -62,6 +65,7 @@ struct AddPostView: View {
                         }
                         
                         Button(action: {
+                            generateHapticFeedback()
                             selectedDate = Calendar.current.date(byAdding: .day, value: -1, to: selectedDate) ?? selectedDate
                         }) {
                             Text("前日")
@@ -74,6 +78,7 @@ struct AddPostView: View {
                         )
                         
                         Button(action: {
+                            generateHapticFeedback()
                             selectedDate = Calendar.current.date(byAdding: .day, value: 1, to: selectedDate) ?? selectedDate
                         }) {
                             Text("翌日")
@@ -112,8 +117,18 @@ struct AddPostView: View {
                 .shadow(radius: 3)
             }
             .padding()
+            .onAppear {
+                DispatchQueue.main.async {
+                    self.isTextFieldFocused = true
+                }
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    }
+    
+    private func generateHapticFeedback() {
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
     }
     
     func formattedDate(_ date: Date) -> String {

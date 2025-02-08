@@ -28,8 +28,8 @@ struct PresetDetailView: View {
                 Color(hex: preset.header.headerColor)  // カスタムのColor拡張でhexを変換
                     .frame(height: 20)
                     .clipShape(RoundedCorner(radius: 50, corners: [.topLeft, .topRight]))
-                    .padding(.bottom, -20)
-                    .padding(.top, 10)
+                    .padding(.bottom, -30)
+                    .padding(.top, 20)
                     .zIndex(1)
             }
             

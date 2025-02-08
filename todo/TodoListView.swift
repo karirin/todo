@@ -23,8 +23,10 @@ struct TodoRowView: View {
         HStack {
             // チェックボタン
             Image(systemName: item.isCompleted ? "checkmark.circle.fill" : "circle")
+                .font(.system(size: 20))
                 .foregroundColor(item.isCompleted ? .green : .black)
                 .onTapGesture {
+                    generateHapticFeedback()
                     if isCustomizationMode {
                         activeSheet = .postListEditor
                     } else {
@@ -33,7 +35,7 @@ struct TodoRowView: View {
                 }
                 .background(Color("backgroundColor").opacity(userSettingsViewModel.postListOpacityFlag ? 0.6 : 0))
                 .cornerRadius(10)
-                .padding(.trailing, 10)
+                .padding(.trailing, 0)
             
             // タイトルと期限日
             HStack{
@@ -44,7 +46,7 @@ struct TodoRowView: View {
                         .strikethrough(item.isCompleted, color: .black)
                         .foregroundColor(item.isCompleted ? .gray : userSettingsViewModel.postListTextColor)
                         .background(Color("backgroundColor").opacity(userSettingsViewModel.postListOpacityFlag ? 0.6 : 0))
-//                        .cornerRadius(5)
+                        .clipShape(RoundedCorner(radius: 5, corners: [.topLeft, .topRight]))
                     HStack {
                         Image(systemName: "calendar.circle")
                             .font(.system(size: 16))
@@ -54,7 +56,7 @@ struct TodoRowView: View {
                     }
                     .foregroundColor(item.isCompleted ? .gray : userSettingsViewModel.postListTextColor)
                     .background(Color("backgroundColor").opacity(userSettingsViewModel.postListOpacityFlag ? 0.6 : 0))
-//                    .cornerRadius(5)
+                    .clipShape(RoundedCorner(radius: 5, corners: [.topRight,.bottomLeft, .bottomRight]))
                 }
                 .padding(5)
                 .cornerRadius(5)
@@ -70,9 +72,12 @@ struct TodoRowView: View {
                 }
             }
             Button(action: {
+                print("trash1")
+                generateHapticFeedback()
                 if isCustomizationMode {
                     activeSheet = .postListEditor
                 } else {
+                    print("trash2")
                     showingAlert = true
                 }
             }) {
@@ -128,17 +133,22 @@ struct TodoRowView: View {
         }
         .alert(isPresented: Binding<Bool>(
             get: { self.showingAlert },
-            set: { _ in }
+            set: { self.showingAlert = $0 }
         )) {
             Alert(
                 title: Text("削除確認"),
-                message: Text("このTodoを削除してもよろしいですか？"),
+                message: Text("「\(item.title)」を削除してもよろしいですか？"),
                 primaryButton: .destructive(Text("削除")) {
                     todoViewModel.removeItem(item)
                 },
                 secondaryButton: .cancel()
             )
         }
+    }
+    
+    private func generateHapticFeedback() {
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
     }
     
     func formattedDate(_ date: Date) -> String {
@@ -189,6 +199,7 @@ struct TodoListView: View {
                 ZStack {
                     HStack {
                         Button(action: {
+                            generateHapticFeedback()
                             isCustomizationMode.toggle()
                         }) {
                             Image(isCustomizationMode ? "編集中" : "編集前" )
@@ -202,13 +213,14 @@ struct TodoListView: View {
                         Spacer()
                         Text(userSettingsViewModel.headerText)
                             .foregroundColor(userSettingsViewModel.headerTextColor)
-                            .font(.system(size: 24))
+                            .font(.system(size: 20))
                             .fontWeight(.bold)
                             .padding(.horizontal,5)
                             .background(Color("backgroundColor").opacity(userSettingsViewModel.headerOpacityFlag ? 0.6 : 0))
                             .cornerRadius(10)
                         Spacer()
                         Button(action: {
+                            generateHapticFeedback()
                             isCustomizationMode.toggle()
                         }) {
                             Image(isCustomizationMode ? "編集中" : "編集前" )
@@ -281,6 +293,7 @@ struct TodoListView: View {
                         HStack {
                             Spacer()
                             Button(action: {
+                                generateHapticFeedback()
                                 if isCustomizationMode {
                                     activeSheet = .plusButtonEditor
                                 } else {
@@ -361,6 +374,11 @@ struct TodoListView: View {
                     self.dragOffset = .zero
                 }
         )
+    }
+    
+    private func generateHapticFeedback() {
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
     }
     
     func isSmallDevice() -> Bool {

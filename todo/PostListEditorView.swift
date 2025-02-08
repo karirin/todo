@@ -10,14 +10,23 @@ import SwiftUI
 struct PostListEditorView: View {
     @ObservedObject var todoViewModel: TodoViewModel
     @ObservedObject var userSettingsViewModel: UserSettingsViewModel
-    @State private var selectedColor: Color = Color.white
+    @State private var selectedColor: String = "#000000"
     @Environment(\.presentationMode) var presentationMode
     @State private var selectedTextColor: Color = .black
     @State private var postListOpacityFlag: Bool = false
     @State private var isInitializing: Bool = true
     
-    let predefinedColors: [Color] = [
-        .white, .black, .gray, .red, .orange, .yellow, .green, .blue, .purple, .brown
+    let predefinedColors: [String] = [
+        "#FEFEFE", // White
+        "#000000", // Black
+        "#808080", // Gray
+        "#FE0000", // Red
+        "#FEA500", // Orange
+        "#FEFE00", // Yellow
+        "#008000", // Green
+        "#0000FE", // Blue
+        "#800080", // Purple
+        "#A52A2A"  // Brown
     ]
     
     let predefinedBackgroundImageNames: [String] = [
@@ -74,18 +83,21 @@ struct PostListEditorView: View {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 20) {
                 ForEach(predefinedColors, id: \.self) { color in
                     Button(action: {
-                        selectedColor = color
-                        userSettingsViewModel.updateTodoTextColor(color)
-                        print("選択されたTodoテキスト色: \(color.toHex() ?? "N/A")")
+                        userSettingsViewModel.updateTodoTextColor(Color(hex:color))
+                        generateHapticFeedback()
                     }) {
                         ZStack {
                             Circle()
-                                .fill(color)
+                                .fill(Color(hex:color))
                                 .frame(width: 50, height: 50)
+                                .overlay(
+                                    Circle()
+                                        .stroke(color.lowercased() == userSettingsViewModel.postListTextColor.toHex()!.lowercased() ? Color.black : Color.clear, lineWidth: 3)
+                                )
                             
-                            if color == selectedColor {
+                            if color.lowercased() == userSettingsViewModel.postListTextColor.toHex()!.lowercased() {
                                 Image(systemName: "checkmark")
-                                    .foregroundColor(.white)
+                                    .foregroundColor(color == "#FEFEFE" || color == "#FEFE00" ? .black : .white)
                                     .font(.system(size: 20, weight: .bold))
                             }
                         }
@@ -107,6 +119,7 @@ struct PostListEditorView: View {
                     HStack {
                         // 背景画像を色でフィルタリングするボタン
                         Button(action: {
+                            generateHapticFeedback()
                             isColorSheetPresented = true
                         }) {
                             HStack {
@@ -127,6 +140,7 @@ struct PostListEditorView: View {
                             .font(.headline)
                         Spacer()
                         Button(action: {
+                            generateHapticFeedback()
                             isColorSheetPresented = true
                         }) {
                             HStack {
@@ -149,6 +163,7 @@ struct PostListEditorView: View {
                         
                         // 背景無しボタン
                         Button(action: {
+                            generateHapticFeedback()
                             withAnimation {
                                 userSettingsViewModel.clearPostListImage()
                                 userSettingsViewModel.updatePostListColor(Color(hex: "#FFFFFF"))
@@ -174,10 +189,10 @@ struct PostListEditorView: View {
                         // フィルタリングされた背景画像ボタン
                         ForEach(filteredImageNames, id: \.self) { imageName in
                             Button(action: {
+                                generateHapticFeedback()
                                 withAnimation {
                                     userSettingsViewModel.updatePostListImage(named: imageName)
                                     userSettingsViewModel.updatePostListColor(Color(hex: "#FFFFFF"))
-                                    print("背景画像を選択: \(imageName)")
                                 }
                             }) {
                                 Image(imageName)
@@ -187,30 +202,40 @@ struct PostListEditorView: View {
                                     .clipped()
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 10)
-                                            .stroke(userSettingsViewModel.postListImageName == imageName ? Color.black : Color.clear, lineWidth: 2)
+                                            .stroke(userSettingsViewModel.postListImageName == imageName ? Color.black : Color.clear, lineWidth: 3)
                                     )
                             }
                         }
                     }
                     .padding()
                 }
+                    
+                    
+                    Button(action: {
+                        presentationMode.wrappedValue.dismiss()  // 画面を閉じて戻る
+                    }) {
+                        Text("戻る")
+                            .frame(maxWidth:.infinity)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(Color.black)
+                            .cornerRadius(8)
+                    }.padding()
             }
-            Spacer()
         }
         .background(Color("backgroundColor"))
         .onAppear{
-            // 投稿一覧色に基づいてフィルタリング
-            if let category = closestColorCategory(to: userSettingsViewModel.postListColor) {
-                print("選択された色カテゴリ: \(category.name)")
-                filteredImageNames = predefinedBackgroundImageNames
-                print("フィルタリングされた画像名: \(filteredImageNames)")
-            } else {
-                filteredImageNames = predefinedBackgroundImageNames
-                print("色カテゴリが見つからなかったため、全ての画像を表示")
-            }
-            DispatchQueue.main.async {
-                isInitializing = false
-            }
+                // 投稿一覧色に基づいてフィルタリング
+                if let category = closestColorCategory(to: userSettingsViewModel.postListColor) {
+                    filteredImageNames = predefinedBackgroundImageNames
+                } else {
+                    filteredImageNames = predefinedBackgroundImageNames
+                    print("色カテゴリが見つからなかったため、全ての画像を表示")
+                }
+                DispatchQueue.main.async {
+                    isInitializing = false
+                }
         }
         .sheet(isPresented: $isColorSheetPresented) {
             VStack(spacing: 20) {
@@ -219,9 +244,10 @@ struct PostListEditorView: View {
                     .padding(.top)
                 
                 HStack(spacing: 15) {
-                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
                         ForEach(colorCategories) { category in
                             Button(action: {
+                                generateHapticFeedback()
                                 withAnimation {
                                     if selectedCategory?.name == category.name {
                                         // 既に選択されている場合は選択解除
@@ -259,20 +285,22 @@ struct PostListEditorView: View {
                         }
                     }
                 }
-                
-                Spacer()
-                
-                // キャンセルボタン
-                Button(action: {
-                    isColorSheetPresented = false
-                }) {
-                    Text("キャンセル")
-                        .foregroundColor(.red)
-                        .padding()
-                }
             }
             .padding()
+            .presentationDetents([.large,
+                                  .height(280),
+                                  .fraction(isSmallDevice() ? 0.4 : 0.35)
+            ])
         }
+    }
+    
+    func isSmallDevice() -> Bool {
+        return UIScreen.main.bounds.width < 390
+    }
+    
+    private func generateHapticFeedback() {
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
     }
     
     /// 選択された色に最も近い色カテゴリを取得

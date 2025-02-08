@@ -25,14 +25,14 @@ struct HeaderEditorView: View {
     @State private var headerOpacityFlag: Bool = false
 
     let predefinedColorHexes: [String] = [
-        "#FFFFFF", // White
+        "#FEFEFE", // White
         "#000000", // Black
         "#808080", // Gray
-        "#FF0000", // Red
+        "#FE0000", // Red
         "#FFA500", // Orange
-        "#FFFF00", // Yellow
+        "#FEFE00", // Yellow
         "#008000", // Green
-        "#0000FF", // Blue
+        "#0000FE", // Blue
         "#800080", // Purple
         "#A52A2A"  // Brown
     ]
@@ -80,11 +80,11 @@ struct HeaderEditorView: View {
                         .font(.headline)
                     Spacer()
                 }
-                TextField("ヘッダーのテキストを入力", text: $headerText)
+                TextField("ヘッダーのテキストを入力", text: $userSettingsViewModel.headerText)
                     .border(Color.clear, width: 0)
                     .font(.system(size: 20))
                     .cornerRadius(8)
-                    .onChange(of: headerText) { newValue in
+                    .onChange(of: userSettingsViewModel.headerText) { newValue in
                         if isInitializing { return }
                         userSettingsViewModel.updateHeaderText(newValue)
                     }
@@ -103,10 +103,11 @@ struct HeaderEditorView: View {
                     ForEach(predefinedColorHexes, id: \.self) { hex in
                         ColorButton(
                             hex: hex,
-                            selectedHex: selectedTextColorHex
+                            selectedHex: userSettingsViewModel.headerTextColor.toHex()!
                         ) {
                             withAnimation {
                                 if isInitializing { return }
+                                generateHapticFeedback()
                                 // その後、ヘッダーテキスト色を更新
                                 selectedTextColorHex = hex
                                 let selectedTextColor = Color(hex: hex)
@@ -114,20 +115,24 @@ struct HeaderEditorView: View {
                                 userSettingsViewModel.updateHeaderTextColor(selectedTextColor)
                             }
                         }
+                        .onAppear {
+                            print("hex      :\(selectedTextColorHex)")
+                        }
                     }
                 }
             }
             
-            Toggle("文字を見やすくする", isOn: $headerOpacityFlag)
+            Toggle("文字を見やすくする", isOn: $userSettingsViewModel.headerOpacityFlag)
                 .font(.headline)
                 .padding(.horizontal)
-                .onChange(of: headerOpacityFlag) { newValue in
+                .onChange(of: userSettingsViewModel.headerOpacityFlag) { newValue in
                     if isInitializing { return }
                     userSettingsViewModel.updateHeaderOpacityFlag(newValue)
                 }
 
             HStack {
                 Button(action: {
+                    generateHapticFeedback()
                     isHeaderSheetPresented = true
                 }) {
                     HStack {
@@ -147,6 +152,7 @@ struct HeaderEditorView: View {
                     .font(.headline)
                 Spacer()
                 Button(action: {
+                    generateHapticFeedback()
                     isColorSheetPresented = true
                 }) {
                     HStack {
@@ -167,6 +173,7 @@ struct HeaderEditorView: View {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 20) {
                     
                     Button(action: {
+                        generateHapticFeedback()
                         withAnimation {
                             userSettingsViewModel.clearHeaderImage()
                         }
@@ -193,6 +200,7 @@ struct HeaderEditorView: View {
                                 .scaledToFit()
                                 .cornerRadius(8)
                                 .onTapGesture {
+                                    generateHapticFeedback()
                                     withAnimation {
                                         headerImageName = imageName
                                         if let imageName = headerImageName {
@@ -204,20 +212,29 @@ struct HeaderEditorView: View {
                                 }
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 8)
-                                        .stroke(headerImageName == imageName ? Color.blue : Color.clear, lineWidth: 2)
+                                        .stroke(userSettingsViewModel.headerImageName == imageName ? Color.black : Color.clear, lineWidth: 3)
                                 )
                         }
                     }
                 }
                 .padding()
             }
+            Button(action: {
+                presentationMode.wrappedValue.dismiss()  // 画面を閉じて戻る
+            }) {
+                Text("戻る")
+                    .frame(maxWidth:.infinity)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
+                    .padding()
+                    .background(Color.black)
+                    .cornerRadius(8)
+            }
         }
         .padding()
         .background(Color("backgroundColor"))
-            .onAppear {
+        .onAppear {
                 self.headerText = userSettingsViewModel.headerText
-                self.headerColor = userSettingsViewModel.headerColor
-                self.headerTextColor = userSettingsViewModel.headerTextColor
                 self.headerImageName = userSettingsViewModel.headerImageName
                 self.headerOpacityFlag = userSettingsViewModel.headerOpacityFlag
                 if let category = closestColorCategory(to: selectedColor) {
@@ -236,9 +253,10 @@ struct HeaderEditorView: View {
                         .padding(.top)
                     
                     HStack(spacing: 15) {
-                        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 20) {
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 20) {
                             ForEach(colorCategories) { category in
                                 Button(action: {
+                                    generateHapticFeedback()
                                     withAnimation {
                                         if selectedCategory?.name == category.name {
                                             // 既に選択されている場合は選択解除
@@ -273,21 +291,24 @@ struct HeaderEditorView: View {
                             }
                         }
                     }
-                    
-                    Spacer()
-                    
-                    // キャンセルボタン
-                    Button(action: {
-                        isColorSheetPresented = false
-                    }) {
-                        Text("キャンセル")
-                            .foregroundColor(.red)
-                            .padding()
-                    }
                 }
                 .padding()
+                .presentationDetents([.large,
+                                      .height(280),
+                                      .fraction(isSmallDevice() ? 0.40 : 0.35)
+                ])
             }
     }
+    
+    func isSmallDevice() -> Bool {
+        return UIScreen.main.bounds.width < 390
+    }
+    
+    private func generateHapticFeedback() {
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
+    }
+    
     func closestColorCategory(to color: Color) -> ColorCategory? {
         guard let selectedRGB = color.getRGB() else { return nil }
         

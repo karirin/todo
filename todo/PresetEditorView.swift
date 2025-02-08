@@ -16,14 +16,36 @@ struct PresetEditorView: View {
     @State private var showChangeAlert = false
     @State private var selectedPresetKey: String? = nil
     @State private var showDeleteAlert = false
+    @State private var isSquarePreview: Bool = false
     
     var body: some View {
         VStack {
-            Button(action: {
-                addFlag.toggle()
-            }) {
-                Text("追加")
+            HStack {
+                Spacer()
+                Text("カスタマイズ一覧")
+                    .foregroundColor(userSettingsViewModel.headerTextColor)
+                    .font(.system(size: 20))
+                    .fontWeight(.bold)
+                    .padding(.horizontal,5)
+                    .background(Color("backgroundColor").opacity(userSettingsViewModel.headerOpacityFlag ? 0.6 : 0))
+                    .cornerRadius(10)
+                Spacer()
             }
+            .foregroundColor(.black)
+            .frame(maxWidth: .infinity, maxHeight: 60)
+            .background(
+                    Group {
+                        if let headerImageName = userSettingsViewModel.headerImageName,
+                           let uiImage = UIImage(named: headerImageName) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .edgesIgnoringSafeArea(.all)
+                        } else {
+                            userSettingsViewModel.headerColor
+                                .edgesIgnoringSafeArea(.all)
+                        }
+                    }
+                )
             ZStack {
                 VStack{
                     if let headerImageName = userSettingsViewModel.settings.header.headerImageName,
@@ -31,17 +53,18 @@ struct PresetEditorView: View {
                         Image(uiImage: uiHeaderImage)
                             .resizable()
                             .scaledToFill()
-                            .frame(height: 20)
+                            .frame(height: isSquarePreview ? 100 : 20)
                         
                             .clipShape(RoundedCorner(radius: 50, corners: [.topLeft, .topRight]))
-                            .padding(.bottom, -20)
-                            .padding(.top,10)
+                            .padding(.bottom, -30)
+                            .padding(.top, 20)
                             .zIndex(1)
                     } else {
                         userSettingsViewModel.headerColor
-                            .frame(height: 20)
+                            .frame(height: isSquarePreview ? 100 : 20)
                             .clipShape(RoundedCorner(radius: 50, corners: [.topLeft, .topRight]))
-                            .padding(.bottom, -10).zIndex(1)
+                            .padding(.bottom, -30)
+                            .padding(.top, 20).zIndex(1)
                     }
                     ZStack{
                         if let bgImageName = userSettingsViewModel.settings.background.backgroundImageName,
@@ -110,7 +133,7 @@ struct PresetEditorView: View {
                                         .background(userSettingsViewModel.plusButtonColor)
                                         .foregroundColor(Color.white)
                                         .clipShape(Circle())
-                                        .padding(.top, -20)
+                                        .padding(.top, isSquarePreview ? -100 : -20)
                                 }
                                 .padding(.bottom, 30)
                                 .padding(.trailing, 10)
@@ -119,7 +142,7 @@ struct PresetEditorView: View {
                     }
                 }
         }
-            .frame(width: 100,height: 250)
+        .frame(width: 100, height: isSquarePreview ? 100 : 250)
         .cornerRadius(10)
         .shadow(radius: 3)
         
@@ -129,6 +152,7 @@ struct PresetEditorView: View {
                         ForEach(Array(userSettingsViewModel.presets.keys).sorted(), id: \.self) { key in
                             if let preset = userSettingsViewModel.presets[key] {
                                 Button(action: {
+                                    generateHapticFeedback()
                                     selectedPresetKey = key
                                     showChangeAlert = true
                                 }) {
@@ -139,7 +163,7 @@ struct PresetEditorView: View {
                                                Image(uiImage: uiHeaderImage)
                                                    .resizable()
                                                    .scaledToFill()
-                                                   .frame(height: 20)
+                                                   .frame(height: isSquarePreview ? 120 : 20)
                                                
                                                    .clipShape(RoundedCorner(radius: 50, corners: [.topLeft, .topRight]))
                                                    .padding(.bottom, -20)
@@ -219,7 +243,7 @@ struct PresetEditorView: View {
                                                                .background(userSettingsViewModel.plusButtonColor)
                                                                .foregroundColor(Color.white)
                                                                .clipShape(Circle())
-                                                               .padding(.top, -20)
+                                                               .padding(.top, isSquarePreview ? -110 : -20)
                                                        }
                                                        .padding(.bottom, 30)
                                                        .padding(.trailing, 10)
@@ -228,7 +252,7 @@ struct PresetEditorView: View {
                                            }
                                        }
                                    }
-                                       .frame(width: 100,height: 250)
+                                    .frame(width: 100, height: isSquarePreview ? 100 : 250)
                                    .cornerRadius(10)
                                    .shadow(radius: 3)
                                    .overlay(
@@ -236,6 +260,7 @@ struct PresetEditorView: View {
                                            Spacer()
                                            HStack{
                                                Button(action: {
+                                                   generateHapticFeedback()
                                                    selectedPresetKey = key
                                                    showDeleteAlert = true
                                                }) {
@@ -260,6 +285,53 @@ struct PresetEditorView: View {
             }
         }
         .overlay(
+            ZStack {
+                Spacer()
+                HStack {
+                    VStack{
+                        Spacer()
+                        HStack {
+                            Spacer()
+                            VStack(spacing: -20){
+                                Button(action: {
+                                    generateHapticFeedback()
+                                    isSquarePreview.toggle()
+                                }) {
+                                    Image(isSquarePreview ? "長方形" : "四角")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(height:70)
+                                }
+                                .shadow(radius: 10)
+                                .padding()
+                                Button(action: {
+                                    generateHapticFeedback()
+                                    addFlag.toggle()
+                                }) {
+                                    if let plusButtonImageName = userSettingsViewModel.plusButtonImageName,
+                                       let uiImage = UIImage(named: plusButtonImageName) {
+                                        Image(uiImage: uiImage)
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 70)
+                                    } else {
+                                        Image(systemName: "plus")
+                                            .font(.system(size: 30))
+                                            .padding(20)
+                                            .background(userSettingsViewModel.plusButtonColor)
+                                            .foregroundColor(Color.white)
+                                            .clipShape(Circle())
+                                    }
+                                }
+                                .shadow(radius: 10)
+                                .padding()
+                            }
+                        }
+                    }
+                }
+            }
+        )
+        .overlay(
             Group {
                 if addFlag {
                     ZStack {
@@ -275,6 +347,7 @@ struct PresetEditorView: View {
                             HStack {
                                 // キャンセルボタン
                                 Button("戻る") {
+                                    generateHapticFeedback()
                                     presetName = ""
                                     addFlag = false
                                 }
@@ -283,6 +356,7 @@ struct PresetEditorView: View {
 
                                 // 保存ボタン
                                 Button("保存") {
+                                    generateHapticFeedback()
                                     userSettingsViewModel.savePreset()
                                     userSettingsViewModel.fetchPresets()
                                     addFlag = false
@@ -316,6 +390,7 @@ struct PresetEditorView: View {
                                 
                                 HStack {
                                     Button("やめる") {
+                                        generateHapticFeedback()
                                         showChangeAlert = false
                                         selectedPresetKey = nil
                                     }
@@ -326,6 +401,7 @@ struct PresetEditorView: View {
                                             print("presetKey      :\(presetKey)")
                                             userSettingsViewModel.loadPreset(name: presetKey)
                                         }
+                                        generateHapticFeedback()
                                         userSettingsViewModel.fetchPresets()
                                         showChangeAlert = false
                                         selectedPresetKey = nil
@@ -356,6 +432,7 @@ struct PresetEditorView: View {
                              PresetDetailView(preset: preset)
                              HStack {
                                  Button("キャンセル") {
+                                     generateHapticFeedback()
                                      showDeleteAlert = false
                                     selectedPresetKey = nil
                                  }
@@ -365,6 +442,7 @@ struct PresetEditorView: View {
                                          userSettingsViewModel.deletePreset(name: key)
                                          userSettingsViewModel.fetchPresets()
                                      }
+                                     generateHapticFeedback()
                                     showDeleteAlert = false
                                     selectedPresetKey = nil
                                  }
@@ -379,6 +457,10 @@ struct PresetEditorView: View {
                 }
             }
         )
+    }
+    private func generateHapticFeedback() {
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
     }
 }
 

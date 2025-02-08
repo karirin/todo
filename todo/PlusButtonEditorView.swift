@@ -51,53 +51,16 @@ struct PlusButtonEditorView: View {
     ]
     
     @State private var selectedCategory: ColorCategory? = nil
-    
-    // 定義済みのカラー配列（`predefinedColors` と `predefinedColorHexes` を統一）
-    let predefinedColors: [Color] = [
-        .white, .black, .gray, .red, .orange, .yellow, .green, .blue, .purple, .brown
-    ]
+    @State private var showCheckmark: Bool = false
     
     var body: some View {
         VStack(spacing: 20) {
-            // カラー選択セクション
-            VStack(alignment: .leading, spacing: 10) {
-                HStack {
-                    Spacer()
-                    Text("ボタンの色を選択")
-                        .font(.headline)
-                    Spacer()
-                }
-                HStack(spacing: 15) {
-                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
-                        ForEach(predefinedColors, id: \.self) { color in
-                            Button(action: {
-                                selectedColor = color
-                                userSettingsViewModel.updatePlusButtonColor(color)
-                                print("選択されたプラスボタン色: \(color.toHex() ?? "N/A")")
-                            }) {
-                                ZStack {
-                                    Circle()
-                                        .fill(color)
-                                        .frame(width: 50, height: 50)
-                                    
-                                    if color == selectedColor {
-                                        Image(systemName: "checkmark")
-                                            .foregroundColor(.white)
-                                            .font(.system(size: 20, weight: .bold))
-                                    }
-                                }
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                        }
-                    }
-                    .padding(.horizontal)
-                }
-            }
             
             // プラスボタンの画像選択セクション
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
                     Button(action: {
+                        generateHapticFeedback()
                         isColorSheetPresented = true
                     }) {
                         HStack {
@@ -118,6 +81,7 @@ struct PlusButtonEditorView: View {
                         .font(.headline)
                     Spacer()
                     Button(action: {
+                        generateHapticFeedback()
                         isColorSheetPresented = true
                     }) {
                         HStack {
@@ -137,6 +101,7 @@ struct PlusButtonEditorView: View {
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 20) {
                         // 画像無しオプション
                         Button(action: {
+                            generateHapticFeedback()
                             withAnimation {
                                 userSettingsViewModel.clearPlusButtonImage()
                                 selectedImageName = nil
@@ -163,6 +128,7 @@ struct PlusButtonEditorView: View {
                         // プリセット画像選択オプション
                         ForEach(filteredImageNames, id: \.self) { imageName in
                             Button(action: {
+                                generateHapticFeedback()
                                 userSettingsViewModel.updatePlusButtonImage(named: imageName)
                                 selectedImageName = imageName
                                 print("選択されたプラスボタン画像: \(imageName)")
@@ -182,7 +148,17 @@ struct PlusButtonEditorView: View {
                     .padding(.horizontal)
                 }
             }
-            Spacer()
+            Button(action: {
+                                    presentationMode.wrappedValue.dismiss()  // 画面を閉じて戻る
+                                }) {
+                                    Text("戻る")
+                                        .frame(maxWidth:.infinity)
+                                        .fontWeight(.bold)
+                                        .foregroundColor(.white)
+                                        .padding()
+                                        .background(Color.black)
+                                        .cornerRadius(8)
+                                }
         }
         .padding()
         .sheet(isPresented: $isColorSheetPresented) {
@@ -192,9 +168,10 @@ struct PlusButtonEditorView: View {
                     .padding(.top)
                 
                 HStack(spacing: 15) {
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 20) {
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 20) {
                         ForEach(colorCategories) { category in
                             Button(action: {
+                                generateHapticFeedback()
                                 withAnimation {
                                     if selectedCategory?.name == category.name {
                                         // 既に選択されている場合は選択解除
@@ -232,33 +209,27 @@ struct PlusButtonEditorView: View {
                         }
                     }
                 }
-                
-                Spacer()
-                
-                // キャンセルボタン
-                Button(action: {
-                    isColorSheetPresented = false
-                }) {
-                    Text("キャンセル")
-                        .foregroundColor(.red)
-                        .padding()
-                }
             }
             .padding()
+            .presentationDetents([.large,
+                                  .height(280),
+                                  .fraction(isSmallDevice() ? 0.4 : 0.35)
+            ])
         }
         .background(Color("backgroundColor"))
-        .navigationBarTitle("プラスボタン編集", displayMode: .inline)
-        .navigationBarItems(trailing: Button("完了") {
-            presentationMode.wrappedValue.dismiss()
-        })
         .onAppear {
-            // 初期選択状態を設定
-            selectedColor = userSettingsViewModel.plusButtonColor
-            selectedImageName = userSettingsViewModel.plusButtonImageName
-            // 初期表示で全ての画像を表示
-            filteredImageNames = predefinedPlusButtonImageNames
-            print("初期表示で全てのプラスボタン画像を表示")
+                selectedColor =  userSettingsViewModel.plusButtonColor
+                selectedImageName = userSettingsViewModel.plusButtonImageName
+                filteredImageNames = predefinedPlusButtonImageNames
         }
+    }
+    func isSmallDevice() -> Bool {
+        return UIScreen.main.bounds.width < 390
+    }
+    
+    private func generateHapticFeedback() {
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
     }
 }
 

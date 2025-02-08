@@ -77,7 +77,7 @@ struct ColorButton: View {
                 
                 if isSelected {
                     Image(systemName: "checkmark")
-                        .foregroundColor(.white)
+                        .foregroundColor(hex ==  "#FEFEFE" || hex ==  "#FEFE00" ? .black : .white)
                         .font(.system(size: 20, weight: .bold))
                 }
             }

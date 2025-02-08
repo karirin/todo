@@ -20,6 +20,7 @@ struct BackgroundImageView: View {
     @State private var selectedColor: Color = Color.white
     @State private var filteredImageNames: [String] = []
     @State private var isColorSheetPresented: Bool = false
+    @Environment(\.presentationMode) var presentationMode
 
     let predefinedBackgroundImageNames: [String] = [
         "紫1", "紫2", "紫3", "紫4", "紫5", "紫6", "紫7", "紫8", "紫9", "紫10",
@@ -56,114 +57,130 @@ struct BackgroundImageView: View {
     ]
         
     var body: some View {
-        ScrollView{
-            VStack(spacing: 20) {
-                HStack {
-                    Button(action: {
-                        isColorSheetPresented = true
-                    }) {
-                        HStack {
-                            Image(systemName: "paintpalette")
-                                .padding(.trailing, -5)
-                            Text("色で探す")
-                        }
-                        .padding(5)
-                        .foregroundColor(.gray)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color.gray, lineWidth: 1)
-                        )
-                    }.opacity(0)
-                    Spacer()
-                    Text("背景を選択")
-                        .font(.headline)
-                    Spacer()
-                    Button(action: {
-                        isColorSheetPresented = true
-                    }) {
-                        HStack {
-                            Image(systemName: "paintpalette")
-                                .padding(.trailing, -5)
-                            Text("色で探す")
-                        }
-                        .padding(5)
-                        .foregroundColor(.gray)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color.gray, lineWidth: 1)
-                        )
-                    }
-                }
-                
-                // 事前定義された背景画像のグリッド
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 20) {
-                    
-                    Button(action: {
-                        withAnimation {
-                            userSettingsViewModel.clearBackgroundImage()
-                        }
-                    }) {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(Color(UIColor.secondarySystemBackground))
-                                .frame(height: 226)
-                            
-                            VStack {
-                                Text("背景無し")
-                                    .foregroundColor(.black)
-                            }
-                        }
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color.black, lineWidth: 2)
-                        )
-                    }
-                    
-                    ForEach(filteredImageNames, id: \.self) { imageName in
+        VStack{
+            ScrollView{
+                VStack(spacing: 20) {
+                    HStack {
                         Button(action: {
+                            generateHapticFeedback()
+                            isColorSheetPresented = true
+                        }) {
+                            HStack {
+                                Image(systemName: "paintpalette")
+                                    .padding(.trailing, -5)
+                                Text("色で探す")
+                            }
+                            .padding(5)
+                            .foregroundColor(.gray)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(Color.gray, lineWidth: 1)
+                            )
+                        }.opacity(0)
+                        Spacer()
+                        Text("背景を選択")
+                            .font(.headline)
+                        Spacer()
+                        Button(action: {
+                            generateHapticFeedback()
+                            isColorSheetPresented = true
+                        }) {
+                            HStack {
+                                Image(systemName: "paintpalette")
+                                    .padding(.trailing, -5)
+                                Text("色で探す")
+                            }
+                            .padding(5)
+                            .foregroundColor(.gray)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(Color.gray, lineWidth: 1)
+                            )
+                        }
+                    }
+                    
+                    // 事前定義された背景画像のグリッド
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 20) {
+                        
+                        Button(action: {
+                            generateHapticFeedback()
                             withAnimation {
-                                // 事前定義された画像を選択
-                                userSettingsViewModel.updateBackgroundImage(named: imageName)
-                                
-                                // 背景色をデフォルトに戻す
-                                userSettingsViewModel.updateBackgroundColor(Color(hex: "#FFFFFF"))
-                            
+                                userSettingsViewModel.clearBackgroundImage()
                             }
                         }) {
-                            Image(imageName)
-                                .resizable()
-                                .scaledToFill()
-                                .cornerRadius(10)
-                                .clipped()
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .stroke(userSettingsViewModel.backgroundImageName == imageName ? Color.black : Color.clear, lineWidth: 4)
-                                )
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(Color(UIColor.secondarySystemBackground))
+                                    .frame(height: 223)
+                                
+                                VStack {
+                                    Text("背景無し")
+                                        .foregroundColor(.black)
+                                }
+                            }
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(Color.black, lineWidth: 2)
+                            )
+                        }
+                        
+                        ForEach(filteredImageNames, id: \.self) { imageName in
+                            Button(action: {
+                                generateHapticFeedback()
+                                withAnimation {
+                                    // 事前定義された画像を選択
+                                    userSettingsViewModel.updateBackgroundImage(named: imageName)
+                                    
+                                    // 背景色をデフォルトに戻す
+                                    userSettingsViewModel.updateBackgroundColor(Color(hex: "#FFFFFF"))
+                                    
+                                }
+                            }) {
+                                Image(imageName)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .cornerRadius(10)
+                                    .clipped()
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .stroke(userSettingsViewModel.backgroundImageName == imageName ? Color.black : Color.clear, lineWidth: 4)
+                                    )
+                            }
                         }
                     }
+                    .padding()
+                    
+                    Spacer()
                 }
                 .padding()
-                
-                Spacer()
             }
-            .padding()
+            Button(action: {
+                presentationMode.wrappedValue.dismiss()  // 画面を閉じて戻る
+            }) {
+                Text("戻る")
+                    .frame(maxWidth:.infinity)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
+                    .padding()
+                    .background(Color.black)
+                    .cornerRadius(8)
+            }.padding()
         }
         .background(Color("backgroundColor"))
         .onAppear {
-            // 現在の背景色のHexコードを選択状態に反映
-//            selectedColor = Color(hex: userSettingsViewModel.settings.backgroundColor)
             filteredImageNames = predefinedBackgroundImageNames
         }
         .sheet(isPresented: $isColorSheetPresented) {
-            VStack(spacing: 20) {
+            VStack(spacing: 10) {
                 Text("色を選択")
                     .font(.headline)
                     .padding(.top)
                 
                 HStack(spacing: 15) {
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 20) {
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 10) {
                         ForEach(colorCategories) { category in
                             Button(action: {
+                                generateHapticFeedback()
                                 withAnimation {
                                     if selectedCategory?.name == category.name {
                                         // 既に選択されている場合は選択解除
@@ -199,19 +216,31 @@ struct BackgroundImageView: View {
                     }
                 }
                 
-                Spacer()
-                
                 // キャンセルボタン
-                Button(action: {
-                    isColorSheetPresented = false
-                }) {
-                    Text("キャンセル")
-                        .foregroundColor(.red)
-                        .padding()
-                }
+//                Button(action: {
+//                    generateHapticFeedback()
+//                    isColorSheetPresented = false
+//                }) {
+//                    Text("キャンセル")
+//                        .foregroundColor(.red)
+//                        .padding()
+//                }
             }
             .padding()
+            .presentationDetents([.large,
+                                  .height(280),
+                                  .fraction(isSmallDevice() ? 0.35 : 0.30)
+            ])
         }
+    }
+    
+    func isSmallDevice() -> Bool {
+        return UIScreen.main.bounds.width < 390
+    }
+    
+    private func generateHapticFeedback() {
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
     }
     
     func closestColorCategory(to color: Color) -> ColorCategory? {
