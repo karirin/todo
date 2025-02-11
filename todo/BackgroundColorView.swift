@@ -167,5 +167,5 @@ struct BackgroundColorView: View {
 }
 
 #Preview {
-    BackgroundColorView(userSettingsViewModel: UserSettingsViewModel(userID: AuthManager().currentUserId!))
+    BackgroundColorView(userSettingsViewModel: UserSettingsViewModel())
 }

@@ -88,9 +88,10 @@ class UserSettingsViewModel: ObservableObject {
     private var handle: DatabaseHandle?
     private var userID: String
     
-    init(userID: String, mockSettings: UserSettings? = nil) {
-        self.userID = userID
-        self.ref = Database.database().reference().child("users").child(userID).child("settings")
+    init(mockSettings: UserSettings? = nil) {
+        let currentUserId = AuthManager().currentUserId!
+        self.userID = currentUserId
+        ref = Database.database().reference().child("users").child(currentUserId).child("settings")
         if let mock = mockSettings {
             self.settings = mock
             self.backgroundColor = Color(hex: mock.background.backgroundColor)

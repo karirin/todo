@@ -633,6 +633,6 @@ struct PlusButtonEditorView: View {
 
 struct PlusButtonEditorView_Previews: PreviewProvider {
     static var previews: some View {
-        PlusButtonEditorView(userSettingsViewModel: UserSettingsViewModel(userID: AuthManager().currentUserId!), tutorialNum: .constant(9))
+        PlusButtonEditorView(userSettingsViewModel: UserSettingsViewModel(), tutorialNum: .constant(9))
     }
 }

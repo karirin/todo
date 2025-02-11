@@ -144,5 +144,5 @@ struct AddPostView: View {
 }
 
 #Preview {
-    AddPostView(text: .constant("test"), todoViewModel: TodoViewModel(userID: AuthManager().currentUserId!))
+    AddPostView(text: .constant("test"), todoViewModel: TodoViewModel())
 }

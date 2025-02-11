@@ -142,6 +142,6 @@ extension UIColor {
 
 struct PresetDetailView_Previews: PreviewProvider {
     static var previews: some View {
-        PresetEditorView(userSettingsViewModel: UserSettingsViewModel(userID: AuthManager().currentUserId!))
+        PresetEditorView(userSettingsViewModel: UserSettingsViewModel())
     }
 }

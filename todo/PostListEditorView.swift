@@ -338,8 +338,8 @@ struct PostListEditorView: View {
 struct PostListEditorView_Previews: PreviewProvider {
     static var previews: some View {
         PostListEditorView(
-            todoViewModel: TodoViewModel(userID: AuthManager().currentUserId!),
-            userSettingsViewModel: UserSettingsViewModel(userID: AuthManager().currentUserId!)
+            todoViewModel: TodoViewModel(),
+            userSettingsViewModel: UserSettingsViewModel()
         )
     }
 }

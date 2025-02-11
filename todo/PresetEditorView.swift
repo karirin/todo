@@ -1174,100 +1174,6 @@ struct PresetEditorView: View {
                         Spacer()
                 }
             }
-//            if tutorialNum == 12 {
-//                GeometryReader { geometry in
-//                    Color.black.opacity(0.5)
-//                        .overlay(
-//                            Circle()
-//                                .padding(-5)
-//                                .frame(width: buttonRect8.width, height: buttonRect8.height)
-//                                .position(x: buttonRect8.midX, y: buttonRect8.midY)
-//                                .blendMode(.destinationOut)
-//                        )
-//                        .ignoresSafeArea()
-//                        .compositingGroup()
-//                        .background(.clear)
-//                        .onTapGesture {
-//                            generateHapticFeedback()
-//                            tutorialNum = 0
-//                        }
-//                }
-//                VStack {
-//                    Spacer()
-//                        .frame(height: buttonRect8.minY - bubbleHeight8 - 20)
-//                    VStack(alignment: .trailing, spacing: 10) {
-//                        HStack{
-//                            Spacer()
-//                            VStack{
-//                        Text("右下のボタンをタップして\n削除することができます")
-//                            .font(.callout)
-//                            .padding(5)
-//                            .font(.system(size: 24.0))
-//                            .padding(.all, 8.0)
-//                            .background(Color.white)
-//                            .cornerRadius(20)
-//                            .padding(.horizontal, 8)
-//                            .foregroundColor(Color.black)
-//                            .shadow(radius: 10)
-//                                HStack{
-//                                Button(action: {
-//                                    generateHapticFeedback()
-//                                    tutorialNum = 0
-//                                }) {
-//                                HStack {
-//                                    Text("次へ")
-//                                    Image(systemName: "chevron.forward.circle")
-//                                }
-//                                .padding(5)
-//                                .font(.callout)
-//                                .font(.system(size: 20.0))
-//                                .padding(.all, 8.0)
-//                                .background(Color.white)
-//                                .cornerRadius(20)
-//                                .padding(.horizontal, 8)
-//                                .foregroundColor(Color.black)
-//                                .shadow(radius: 10)
-//                            }
-//                                }
-//                                .padding(.leading, 130)
-//                        }
-//                        }
-//                    }
-//                    .background(GeometryReader { geometry in
-//                        Path { _ in
-//                            DispatchQueue.main.async {
-//                                self.bubbleHeight8 = geometry.size.height
-//                            }
-//                        }
-//                    })
-//                    Spacer()
-//                }
-//                .ignoresSafeArea()
-//                VStack{
-//                    Spacer()
-//                    HStack{
-//                        Button(action: {
-//                            generateHapticFeedback()
-//                            tutorialNum = 0
-//                        }) {
-//                            HStack {
-//                                Image(systemName: "chevron.left.2")
-//                                Text("スキップ")
-//                            }
-//                            .padding(5)
-//                            .font(.system(size: 20.0))
-//                            .padding(.all, 8.0)
-//                            .background(Color.white)
-//                            .cornerRadius(20)
-//                            .padding(.horizontal, 8)
-//                            .foregroundColor(Color.black)
-//                            .shadow(radius: 10)
-//                        }
-//                        Spacer()
-//                    }
-//                    .padding()
-//                }
-//            }
         }
         .onPreferenceChange(ViewPositionKey10.self) { positions in
             self.buttonRect = positions.first ?? .zero
@@ -1294,6 +1200,14 @@ struct PresetEditorView: View {
             self.buttonRect8 = positions.first ?? .zero
         }
         .background(Color("backgroundColor"))
+        .onAppear {
+            let userDefaults = UserDefaults.standard
+            if !userDefaults.bool(forKey: "hasLaunchedTutorialPresetOnappear") {
+                tutorialNum = 1
+            }
+            userDefaults.set(true, forKey: "hasLaunchedTutorialPresetOnappear")
+            userDefaults.synchronize()
+        }
         .onChange(of: addFlag) { newValue in
             if newValue {
                 isTextFieldFocused = true
@@ -1312,6 +1226,6 @@ struct PresetEditorView: View {
 
 struct PresetEditorView_Previews: PreviewProvider {
     static var previews: some View {
-        PresetEditorView(userSettingsViewModel: UserSettingsViewModel(userID: AuthManager().currentUserId!))
+        PresetEditorView(userSettingsViewModel: UserSettingsViewModel())
     }
 }

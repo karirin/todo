@@ -272,5 +272,5 @@ struct CalendarView: View {
 }
 
 #Preview {
-    CalendarView(todoViewModel: TodoViewModel(userID: AuthManager().currentUserId!), userSettingsViewModel: UserSettingsViewModel(userID: AuthManager().currentUserId!))
+    CalendarView(todoViewModel: TodoViewModel(), userSettingsViewModel: UserSettingsViewModel())
 }

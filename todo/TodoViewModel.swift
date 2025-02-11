@@ -32,9 +32,10 @@ class TodoViewModel: ObservableObject {
     private var handle: DatabaseHandle?
     private var userID: String
     
-    init(userID: String) {
-        self.userID = userID
-        ref = Database.database().reference(withPath: "todos/\(userID)")
+    init() {
+        let currentUserId = AuthManager().currentUserId!
+        self.userID = currentUserId
+        ref = Database.database().reference(withPath: "todos/\(currentUserId)")
         fetchData()
     }
     

@@ -1230,5 +1230,5 @@ struct RoundedCorner: Shape {
 }
 
 #Preview {
-    TodoListView(todoViewModel: TodoViewModel(userID: AuthManager().currentUserId!), userSettingsViewModel: UserSettingsViewModel(userID: AuthManager().currentUserId!))
+    TodoListView(todoViewModel: TodoViewModel(), userSettingsViewModel: UserSettingsViewModel())
 }

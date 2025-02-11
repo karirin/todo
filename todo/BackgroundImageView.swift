@@ -268,6 +268,6 @@ struct BackgroundImageView: View {
 
 struct BackgroundImageView_Previews: PreviewProvider {
     static var previews: some View {
-        BackgroundImageView(userSettingsViewModel: UserSettingsViewModel(userID: "mockUserID123"))
+        BackgroundImageView(userSettingsViewModel: UserSettingsViewModel())
     }
 }

@@ -334,5 +334,5 @@ struct HeaderEditorView: View {
 }
 
 #Preview {
-    HeaderEditorView(userSettingsViewModel: UserSettingsViewModel(userID: AuthManager().currentUserId!))
+    HeaderEditorView(userSettingsViewModel: UserSettingsViewModel())
 }

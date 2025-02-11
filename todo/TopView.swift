@@ -8,13 +8,9 @@
 import SwiftUI
 
 struct TopView: View {
-    @StateObject var todoViewModel: TodoViewModel
-    @StateObject var userSettingsViewModel: UserSettingsViewModel
-    
-    init() {
-        _todoViewModel = StateObject(wrappedValue: TodoViewModel(userID: AuthManager().currentUserId!))
-        _userSettingsViewModel = StateObject(wrappedValue: UserSettingsViewModel(userID: AuthManager().currentUserId!))
-    }
+    @StateObject var todoViewModel = TodoViewModel()
+    @StateObject var userSettingsViewModel = UserSettingsViewModel()
+
 
     var body: some View {
         TabView {
