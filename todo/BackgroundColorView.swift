@@ -127,7 +127,6 @@ struct BackgroundColorView: View {
                         // その後、背景色を更新
                         selectedColorHex = hex
                         pickedColor = Color(hex: hex)
-                        userSettingsViewModel.updateBackgroundColor(pickedColor)
                     }
                 }
             }
@@ -148,7 +147,6 @@ struct BackgroundColorView: View {
                             
                             // その後、背景色を更新
                             selectedColorHex = hex
-                            userSettingsViewModel.updateBackgroundColor(newColor)
                         }
                     }
                     .padding()

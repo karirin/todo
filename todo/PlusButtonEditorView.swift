@@ -45,7 +45,7 @@ struct PlusButtonEditorView: View {
         ColorCategory(name: "プラスボタン薄緑", color: Color(hex: "#ADFF2F")),  // YellowGreen
         ColorCategory(name: "プラスボタン灰", color: Color(hex: "#808080")),    // Gray
         ColorCategory(name: "プラスボタン水", color: Color(hex: "#00BFFF")),    // DeepSkyBlue
-        ColorCategory(name: "プラスボタン薄水", color: Color(hex: "#87CEFA")),  // LightSkyBlue
+        // ColorCategory(name: "プラスボタン薄水", color: Color(hex: "#87CEFA")),  // LightSkyBlue
         ColorCategory(name: "プラスボタン青", color: Color(hex: "#0000FF")),    // Blue
         ColorCategory(name: "プラスボタン緑", color: Color(hex: "#008000")),    // Green
         
@@ -585,7 +585,7 @@ struct PlusButtonEditorView: View {
                                     
                                     if selectedCategory?.name == category.name {
                                         Image(systemName: "checkmark")
-                                            .foregroundColor(.white)
+                                            .foregroundColor(selectedCategory?.name ==  "プラスボタン白" || selectedCategory?.name ==  "プラスボタン黄" ? .black : .white)
                                             .font(.system(size: 20, weight: .bold))
                                     }
                                 }
@@ -598,7 +598,7 @@ struct PlusButtonEditorView: View {
             .padding()
             .presentationDetents([.large,
                                   .height(280),
-                                  .fraction(isSmallDevice() ? 0.4 : 0.35)
+                                  .fraction(isSmallDevice() ? 0.32 : 0.23)
             ])
         }
         
@@ -616,7 +616,6 @@ struct PlusButtonEditorView: View {
         }
         .background(Color("backgroundColor"))
         .onAppear {
-                selectedColor =  userSettingsViewModel.plusButtonColor
                 selectedImageName = userSettingsViewModel.plusButtonImageName
                 filteredImageNames = predefinedPlusButtonImageNames
         }
@@ -633,6 +632,6 @@ struct PlusButtonEditorView: View {
 
 struct PlusButtonEditorView_Previews: PreviewProvider {
     static var previews: some View {
-        PlusButtonEditorView(userSettingsViewModel: UserSettingsViewModel(), tutorialNum: .constant(9))
+        PlusButtonEditorView(userSettingsViewModel: UserSettingsViewModel(), tutorialNum: .constant(0))
     }
 }

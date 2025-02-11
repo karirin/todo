@@ -58,7 +58,7 @@ struct HeaderEditorView: View {
         ColorCategory(name: "ヘッダ薄緑", color: Color(hex: "#ADFF2F")),  // YellowGreen
         ColorCategory(name: "ヘッダ灰", color: Color(hex: "#808080")),    // Gray
         ColorCategory(name: "ヘッダ水", color: Color(hex: "#00BFFF")),    // DeepSkyBlue
-        ColorCategory(name: "ヘッダ薄水", color: Color(hex: "#87CEFA")),  // LightSkyBlue
+        // ColorCategory(name: "ヘッダ薄水", color: Color(hex: "#87CEFA")),  // LightSkyBlue
         ColorCategory(name: "ヘッダ青", color: Color(hex: "#0000FF")),    // Blue
         ColorCategory(name: "ヘッダ緑", color: Color(hex: "#008000")),    // Green
         
@@ -284,7 +284,7 @@ struct HeaderEditorView: View {
                                         
                                         if selectedCategory?.name == category.name {
                                             Image(systemName: "checkmark")
-                                                .foregroundColor(.white)
+                                                .foregroundColor(selectedCategory?.name ==  "ヘッダ白" || selectedCategory?.name ==  "ヘッダ黄" ? .black : .white)
                                                 .font(.system(size: 20, weight: .bold))
                                         }
                                     }
@@ -296,7 +296,7 @@ struct HeaderEditorView: View {
                 .padding()
                 .presentationDetents([.large,
                                       .height(280),
-                                      .fraction(isSmallDevice() ? 0.40 : 0.35)
+                                      .fraction(isSmallDevice() ? 0.32 : 0.23)
                 ])
             }
     }

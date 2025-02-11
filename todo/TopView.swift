@@ -20,11 +20,15 @@ struct TopView: View {
                 }
             CalendarView(todoViewModel: todoViewModel, userSettingsViewModel: userSettingsViewModel)
                 .tabItem {
-                    Label("Calendar", systemImage: "calendar")
+                    Label("カレンダー", systemImage: "calendar")
                 }
             PresetEditorView(userSettingsViewModel: userSettingsViewModel)
                 .tabItem {
-                    Label("Settings", systemImage: "gear")
+                    Label("カスタマイズ", systemImage: "rectangle.grid.2x2")
+                }
+            SettingView()
+                .tabItem {
+                    Label("設定", systemImage: "gear")
                 }
         }
     }

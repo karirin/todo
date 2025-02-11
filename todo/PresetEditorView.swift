@@ -16,7 +16,7 @@ struct PresetEditorView: View {
     @State private var showChangeAlert = false
     @State private var selectedPresetKey: String? = nil
     @State private var showDeleteAlert = false
-    @State private var isSquarePreview: Bool = true
+    @State private var isSquarePreview: Bool = false
     @State private var isEditing: Bool = false
     @State private var tutorialNum: Int = 0
     @State private var buttonRect: CGRect = .zero
@@ -89,9 +89,6 @@ struct PresetEditorView: View {
                             Image(uiImage: uiImage)
                                 .resizable()
                                 .edgesIgnoringSafeArea(.all)
-                        } else {
-                            userSettingsViewModel.headerColor
-                                .edgesIgnoringSafeArea(.all)
                         }
                     }
                 )
@@ -113,12 +110,6 @@ struct PresetEditorView: View {
                                 .padding(.bottom, -30)
                                 .padding(.top,  isSquarePreview ? 110 : 20)
                                 .zIndex(1)
-                        } else {
-                            userSettingsViewModel.headerColor
-                                .frame(height: isSquarePreview ? 100 : 20)
-                                .clipShape(RoundedCorner(radius: 50, corners: [.topLeft, .topRight]))
-                                .padding(.bottom, -30)
-                                .padding(.top, 20).zIndex(1)
                         }
                         ZStack{
                             if let bgImageName = userSettingsViewModel.settings.background.backgroundImageName,
@@ -126,10 +117,6 @@ struct PresetEditorView: View {
                                 Image(uiImage: uiImage)
                                     .resizable()
                                     .scaledToFit()
-                                    .frame(height: 210)
-                                    .clipShape(RoundedCorner(radius: 10))
-                            } else {
-                                userSettingsViewModel.backgroundColor
                                     .frame(height: 210)
                                     .clipShape(RoundedCorner(radius: 10))
                             }
@@ -151,16 +138,6 @@ struct PresetEditorView: View {
                                     Spacer()
                                 }.padding(10)
                                     .padding(.top,isSquarePreview ? 30 : 20)
-                            } else {
-                                VStack{
-                                    userSettingsViewModel.postListColor
-                                        .frame(height: 20)
-                                    userSettingsViewModel.postListColor
-                                        .frame(height: 20)
-                                        .opacity(isSquarePreview ? 0 : 1)
-                                    Spacer()
-                                }.padding(10)
-                                    .padding(.top,isSquarePreview ? 30 :  20)
                             }
                             
                             Spacer()
@@ -176,22 +153,6 @@ struct PresetEditorView: View {
                                             .scaledToFit()
                                             .frame(height: 20)
                                             .padding(.top, isSquarePreview ? -105 : -20)
-                                    }
-                                    .padding(.bottom, 30)
-                                    .padding(.trailing, 10)
-                                }
-                            } else {
-                                VStack{
-                                    Spacer()
-                                    HStack{
-                                        Spacer()
-                                        Image(systemName: "plus")
-                                            .font(.system(size: 15))
-                                            .padding(5)
-                                            .background(userSettingsViewModel.plusButtonColor)
-                                            .foregroundColor(Color.white)
-                                            .clipShape(Circle())
-                                            .padding(.top, isSquarePreview ? -100 : -20)
                                     }
                                     .padding(.bottom, 30)
                                     .padding(.trailing, 10)
@@ -229,11 +190,6 @@ struct PresetEditorView: View {
                                                    .padding(.bottom, -30)
                                                    .padding(.top,  isSquarePreview ? 110 : 20)
                                                    .zIndex(1)
-                                           } else {
-                                               userSettingsViewModel.headerColor
-                                                   .frame(height: 20)
-                                                   .clipShape(RoundedCorner(radius: 50, corners: [.topLeft, .topRight]))
-                                                   .padding(.bottom, -20).padding(.top,10).zIndex(1)
                                            }
                                            ZStack{
                                                if let bgImageName = preset.background.backgroundImageName,
@@ -242,11 +198,6 @@ struct PresetEditorView: View {
                                                        .resizable()
                                                        .scaledToFit()
                                                        .frame(height: 210)
-                                                       .clipShape(RoundedCorner(radius: 10))
-                                               } else {
-                                                   userSettingsViewModel.backgroundColor
-                                                       .frame(height: 210)
-                                                   
                                                        .clipShape(RoundedCorner(radius: 10))
                                                }
                                                
@@ -267,16 +218,6 @@ struct PresetEditorView: View {
                                                        Spacer()
                                                    }.padding(10)
                                                        .padding(.top,isSquarePreview ? 30 :  20)
-                                               } else {
-                                                   VStack{
-                                                       userSettingsViewModel.postListColor
-                                                           .frame(height: 20)
-                                                       userSettingsViewModel.postListColor
-                                                           .frame(height: 20)
-                                                           .opacity(isSquarePreview ? 0 : 1)
-                                                       Spacer()
-                                                   }.padding(10)
-                                                       .padding(.top)
                                                }
                                                
                                                Spacer()
@@ -292,22 +233,6 @@ struct PresetEditorView: View {
                                                                .scaledToFit()
                                                                .frame(height: 20)
                                                                .padding(.top, isSquarePreview ? -105 : -20)
-                                                       }
-                                                       .padding(.bottom, 30)
-                                                       .padding(.trailing, 10)
-                                                   }
-                                               } else {
-                                                   VStack{
-                                                       Spacer()
-                                                       HStack{
-                                                           Spacer()
-                                                           Image(systemName: "plus")
-                                                               .font(.system(size: 15))
-                                                               .padding(5)
-                                                               .background(userSettingsViewModel.plusButtonColor)
-                                                               .foregroundColor(Color.white)
-                                                               .clipShape(Circle())
-                                                               .padding(.top, isSquarePreview ? -110 : -20)
                                                        }
                                                        .padding(.bottom, 30)
                                                        .padding(.trailing, 10)
@@ -392,13 +317,6 @@ struct PresetEditorView: View {
                                                 .resizable()
                                                 .scaledToFit()
                                                 .frame(width: 70)
-                                        } else {
-                                            Image(systemName: "plus")
-                                                .font(.system(size: 30))
-                                                .padding(20)
-                                                .background(userSettingsViewModel.plusButtonColor)
-                                                .foregroundColor(Color.white)
-                                                .clipShape(Circle())
                                         }
                                     }                                .background(GeometryReader { geometry in
                                         Color.clear.preference(key: ViewPositionKey11.self, value: [geometry.frame(in: .global)])

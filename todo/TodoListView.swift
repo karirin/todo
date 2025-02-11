@@ -35,7 +35,6 @@ struct TodoRowView: View {
                 }
                 .background(Color("backgroundColor").opacity(userSettingsViewModel.postListOpacityFlag ? 0.6 : 0))
                 .cornerRadius(10)
-                .padding(.trailing, 0)
             
             // タイトルと期限日
             HStack{
@@ -112,9 +111,6 @@ struct TodoRowView: View {
                     Image(uiImage: uiImage)
                         .resizable()
                         .edgesIgnoringSafeArea(.all)
-                } else {
-                    userSettingsViewModel.postListColor
-                        .edgesIgnoringSafeArea(.all)
                 }
             }
         )
@@ -129,6 +125,7 @@ struct TodoRowView: View {
         .opacity(draggingItem?.id == item.id ? 0.7 : 1.0)
         .scaleEffect(draggingItem?.id == item.id ? 1.05 : 1.0)
         .animation(.easeInOut, value: dragOffset)
+        .padding(.bottom, 5)
         .onChange(of: draggingItem) { newValue in
             self.isDragging = newValue?.id == item.id
         }
@@ -332,10 +329,6 @@ struct TodoListView: View {
                             .resizable()
                             .edgesIgnoringSafeArea(.all)
                             .shadow(color: isCustomizationMode ? Color.black : Color.clear, radius: 20)
-                    } else {
-                        userSettingsViewModel.backgroundColor
-                            .ignoresSafeArea()
-                            .shadow(color: isCustomizationMode ? Color.black : Color.clear, radius: 10)
                     }
                     VStack {
                         ZStack {
@@ -384,11 +377,6 @@ struct TodoListView: View {
                                        let uiImage = UIImage(named: headerImageName) {
                                         Image(uiImage: uiImage)
                                             .resizable()
-                                            .edgesIgnoringSafeArea(.all)
-                                        
-                                            .shadow(color: isCustomizationMode ? Color.black.opacity(0.9) : Color.clear, radius: 10)
-                                    } else {
-                                        userSettingsViewModel.headerColor
                                             .edgesIgnoringSafeArea(.all)
                                         
                                             .shadow(color: isCustomizationMode ? Color.black.opacity(0.9) : Color.clear, radius: 10)
@@ -462,13 +450,6 @@ struct TodoListView: View {
                                                     .resizable()
                                                     .scaledToFit()
                                                     .frame(width: 70)
-                                            } else {
-                                                Image(systemName: "plus")
-                                                    .font(.system(size: 30))
-                                                    .padding(20)
-                                                    .background(userSettingsViewModel.plusButtonColor)
-                                                    .foregroundColor(Color.white)
-                                                    .clipShape(Circle())
                                             }
                                         }                            .background(GeometryReader { geometry in
                                             Color.clear.preference(key: ViewPositionKey2.self, value: [geometry.frame(in: .global)])
@@ -494,21 +475,21 @@ struct TodoListView: View {
                                                     .font(.system(size: 24))
                                                 Text("背景編集")
                                             }
-                                                .padding(10)
-                                                .font(.system(size: 20))
-                                                .foregroundColor(.black)
-                                                .background(Color.white)
-                                                .cornerRadius(10)
-                                                .overlay(
-                                                    RoundedRectangle(cornerRadius: 10)
-                                                        .stroke(Color.black, lineWidth: 1)
-                                                )
-                                                .shadow(radius: 10)
-                                                .background(GeometryReader { geometry in
-                                                    Color.clear.preference(key: ViewPositionKey9.self, value: [geometry.frame(in: .global)])
-                                                })
-                                                .padding(.bottom, 10)
-                                                .opacity(isCustomizationMode ? 1 : 0)
+                                            .padding(10)
+                                            .font(.system(size: 20))
+                                            .foregroundColor(.black)
+                                            .background(Color.white)
+                                            .cornerRadius(10)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 10)
+                                                    .stroke(Color.black, lineWidth: 1)
+                                            )
+                                            .shadow(radius: 10)
+                                            .background(GeometryReader { geometry in
+                                                Color.clear.preference(key: ViewPositionKey9.self, value: [geometry.frame(in: .global)])
+                                            })
+                                            .padding(.bottom, 10)
+                                            .opacity(isCustomizationMode ? 1 : 0)
                                         }
                                         .padding()
                                     }
@@ -525,43 +506,43 @@ struct TodoListView: View {
                             }
                         VStack {
                             Spacer()
-                                //.frame(height: buttonRect.minY - bubbleHeight + 150)
+                            //.frame(height: buttonRect.minY - bubbleHeight + 150)
                             VStack(alignment: .trailing, spacing: 15) {
                                 VStack{
-                                Image("ロゴ")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .cornerRadius(10)
-                                    .shadow(radius: 10)
-                                    .frame(height:80)
-                                    .padding(.bottom)
-                                Text("インストールありがとうございます！\n\nこのアプリは自分好みにToDoアプリをカスタマイズできるアプリです\n早速カスタマイズ方法について紹介します")
-                            }
-                            .font(.callout)
-                            .padding(5)
-                            .font(.system(size: 24.0))
-                            .padding(.all, 16.0)
-                            .background(Color.white)
-                            .cornerRadius(20)
-                            .padding(.horizontal, 4)
-                            .foregroundColor(Color.black)
-                            .shadow(radius: 10)
+                                    Image("ロゴ")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .cornerRadius(10)
+                                        .shadow(radius: 10)
+                                        .frame(height:80)
+                                        .padding(.bottom)
+                                    Text("インストールありがとうございます！\n\nこのアプリは自分好みにToDoアプリをカスタマイズできます\n早速カスタマイズ方法について紹介します")
+                                }
+                                .font(.callout)
+                                .padding(5)
+                                .font(.system(size: 24.0))
+                                .padding(.all, 16.0)
+                                .background(Color.white)
+                                .cornerRadius(20)
+                                .padding(.horizontal, 4)
+                                .foregroundColor(Color.black)
+                                .shadow(radius: 10)
                                 Button(action: {
                                     generateHapticFeedback()
                                     tutorialNum = 2
                                 }) {
-                                HStack {
-                                    Text("次へ")
-                                    Image(systemName: "chevron.forward.circle")
-                                }
-                                .padding(5)
-                                .font(.system(size: 20.0))
-                                .padding(.all, 8.0)
-                                .background(Color.white)
-                                .cornerRadius(20)
-                                .padding(.horizontal, 8)
-                                .foregroundColor(Color.black)
-                                .shadow(radius: 10)
+                                    HStack {
+                                        Text("次へ")
+                                        Image(systemName: "chevron.forward.circle")
+                                    }
+                                    .padding(5)
+                                    .font(.system(size: 20.0))
+                                    .padding(.all, 8.0)
+                                    .background(Color.white)
+                                    .cornerRadius(20)
+                                    .padding(.horizontal, 8)
+                                    .foregroundColor(Color.black)
+                                    .shadow(radius: 10)
                                 }
                             }
                             .background(GeometryReader { geometry in
@@ -600,7 +581,7 @@ struct TodoListView: View {
                                 Spacer()
                             }
                             Spacer()
-                    }
+                        }
                     }
                     if tutorialNum == 2 {
                         GeometryReader { geometry in
@@ -626,33 +607,33 @@ struct TodoListView: View {
                             VStack(alignment: .trailing, spacing: 10) {
                                 HStack {
                                     Spacer()
-                                Text("編集モードにするために\n右上のボタンをクリックします")
-                                    .font(.callout)
+                                    Text("編集モードにするために\n右上のボタンをタップします")
+                                        .font(.callout)
+                                        .padding(5)
+                                        .font(.system(size: 24.0))
+                                        .padding(.all, 8.0)
+                                        .background(Color.white)
+                                        .cornerRadius(20)
+                                        .padding(.horizontal, 16)
+                                        .foregroundColor(Color.black)
+                                        .shadow(radius: 10)
+                                }
+                                Button(action: {
+                                    generateHapticFeedback()
+                                    tutorialNum = 3
+                                }) {
+                                    HStack {
+                                        Text("次へ")
+                                        Image(systemName: "chevron.forward.circle")
+                                    }
                                     .padding(5)
-                                    .font(.system(size: 24.0))
+                                    .font(.system(size: 20.0))
                                     .padding(.all, 8.0)
                                     .background(Color.white)
                                     .cornerRadius(20)
                                     .padding(.horizontal, 16)
                                     .foregroundColor(Color.black)
                                     .shadow(radius: 10)
-                                }
-                                Button(action: {
-                                    generateHapticFeedback()
-                                    tutorialNum = 3
-                                }) {
-                                HStack {
-                                    Text("次へ")
-                                    Image(systemName: "chevron.forward.circle")
-                                }
-                                .padding(5)
-                                .font(.system(size: 20.0))
-                                .padding(.all, 8.0)
-                                .background(Color.white)
-                                .cornerRadius(20)
-                                .padding(.horizontal, 16)
-                                .foregroundColor(Color.black)
-                                .shadow(radius: 10)
                                 }
                             }
                             .background(GeometryReader { geometry in
@@ -714,33 +695,33 @@ struct TodoListView: View {
                             VStack(alignment: .trailing, spacing: 10) {
                                 HStack {
                                     Spacer()
-                                Text("右下のボタンをクリックします")
-                                    .font(.callout)
+                                    Text("右下のボタンをタップします")
+                                        .font(.callout)
+                                        .padding(5)
+                                        .font(.system(size: 24.0))
+                                        .padding(.all, 8.0)
+                                        .background(Color.white)
+                                        .cornerRadius(20)
+                                        .padding(.horizontal, 16)
+                                        .foregroundColor(Color.black)
+                                        .shadow(radius: 10)
+                                }
+                                Button(action: {
+                                    generateHapticFeedback()
+                                    tutorialNum = 5
+                                }) {
+                                    HStack {
+                                        Text("次へ")
+                                        Image(systemName: "chevron.forward.circle")
+                                    }
                                     .padding(5)
-                                    .font(.system(size: 24.0))
+                                    .font(.system(size: 20.0))
                                     .padding(.all, 8.0)
                                     .background(Color.white)
                                     .cornerRadius(20)
                                     .padding(.horizontal, 16)
                                     .foregroundColor(Color.black)
                                     .shadow(radius: 10)
-                                }
-                                Button(action: {
-                                    generateHapticFeedback()
-                                    tutorialNum = 5
-                                }) {
-                                HStack {
-                                    Text("次へ")
-                                    Image(systemName: "chevron.forward.circle")
-                                }
-                                .padding(5)
-                                .font(.system(size: 20.0))
-                                .padding(.all, 8.0)
-                                .background(Color.white)
-                                .cornerRadius(20)
-                                .padding(.horizontal, 16)
-                                .foregroundColor(Color.black)
-                                .shadow(radius: 10)
                                 }
                             }
                             .background(GeometryReader { geometry in
@@ -802,33 +783,33 @@ struct TodoListView: View {
                             VStack(alignment: .trailing, spacing: 10) {
                                 HStack {
                                     Spacer()
-                                Text("プラスボタンが変わっていることを確認します")
-                                    .font(.callout)
+                                    Text("プラスボタンが変わっていることを確認します")
+                                        .font(.callout)
+                                        .padding(5)
+                                        .font(.system(size: 24.0))
+                                        .padding(.all, 8.0)
+                                        .background(Color.white)
+                                        .cornerRadius(20)
+                                        .padding(.horizontal, 16)
+                                        .foregroundColor(Color.black)
+                                        .shadow(radius: 10)
+                                }
+                                Button(action: {
+                                    generateHapticFeedback()
+                                    tutorialNum = 11
+                                }) {
+                                    HStack {
+                                        Text("次へ")
+                                        Image(systemName: "chevron.forward.circle")
+                                    }
                                     .padding(5)
-                                    .font(.system(size: 24.0))
+                                    .font(.system(size: 20.0))
                                     .padding(.all, 8.0)
                                     .background(Color.white)
                                     .cornerRadius(20)
                                     .padding(.horizontal, 16)
                                     .foregroundColor(Color.black)
                                     .shadow(radius: 10)
-                                }
-                                Button(action: {
-                                    generateHapticFeedback()
-                                    tutorialNum = 11
-                                }) {
-                                HStack {
-                                    Text("次へ")
-                                    Image(systemName: "chevron.forward.circle")
-                                }
-                                .padding(5)
-                                .font(.system(size: 20.0))
-                                .padding(.all, 8.0)
-                                .background(Color.white)
-                                .cornerRadius(20)
-                                .padding(.horizontal, 16)
-                                .foregroundColor(Color.black)
-                                .shadow(radius: 10)
                                 }
                             }
                             .background(GeometryReader { geometry in
@@ -889,33 +870,33 @@ struct TodoListView: View {
                                 .frame(height: buttonRect3.minY - bubbleHeight3 + 180)
                             VStack(alignment: .trailing, spacing: 10) {
                                 HStack {
-                                Text("その他にも「ヘッダー」や")
-                                    .font(.callout)
+                                    Text("その他にも「ヘッダー」や")
+                                        .font(.callout)
+                                        .padding(5)
+                                        .font(.system(size: 24.0))
+                                        .padding(.all, 8.0)
+                                        .background(Color.white)
+                                        .cornerRadius(20)
+                                        .padding(.horizontal, 16)
+                                        .foregroundColor(Color.black)
+                                        .shadow(radius: 10)
+                                }
+                                Button(action: {
+                                    generateHapticFeedback()
+                                    tutorialNum = 12
+                                }) {
+                                    HStack {
+                                        Text("次へ")
+                                        Image(systemName: "chevron.forward.circle")
+                                    }
                                     .padding(5)
-                                    .font(.system(size: 24.0))
+                                    .font(.system(size: 20.0))
                                     .padding(.all, 8.0)
                                     .background(Color.white)
                                     .cornerRadius(20)
                                     .padding(.horizontal, 16)
                                     .foregroundColor(Color.black)
                                     .shadow(radius: 10)
-                                }
-                                Button(action: {
-                                    generateHapticFeedback()
-                                    tutorialNum = 12
-                                }) {
-                                HStack {
-                                    Text("次へ")
-                                    Image(systemName: "chevron.forward.circle")
-                                }
-                                .padding(5)
-                                .font(.system(size: 20.0))
-                                .padding(.all, 8.0)
-                                .background(Color.white)
-                                .cornerRadius(20)
-                                .padding(.horizontal, 16)
-                                .foregroundColor(Color.black)
-                                .shadow(radius: 10)
                                 }
                             }
                             .background(GeometryReader { geometry in
@@ -976,33 +957,33 @@ struct TodoListView: View {
                                 .frame(height: buttonRect4.minY - bubbleHeight4 + 210)
                             VStack(alignment: .trailing, spacing: 10) {
                                 HStack {
-                                Text("「TODO」リスト")
-                                    .font(.callout)
+                                    Text("「TODO」リスト")
+                                        .font(.callout)
+                                        .padding(5)
+                                        .font(.system(size: 24.0))
+                                        .padding(.all, 8.0)
+                                        .background(Color.white)
+                                        .cornerRadius(20)
+                                        .padding(.horizontal, 16)
+                                        .foregroundColor(Color.black)
+                                        .shadow(radius: 10)
+                                }
+                                Button(action: {
+                                    generateHapticFeedback()
+                                    tutorialNum = 13
+                                }) {
+                                    HStack {
+                                        Text("次へ")
+                                        Image(systemName: "chevron.forward.circle")
+                                    }
                                     .padding(5)
-                                    .font(.system(size: 24.0))
+                                    .font(.system(size: 20.0))
                                     .padding(.all, 8.0)
                                     .background(Color.white)
                                     .cornerRadius(20)
                                     .padding(.horizontal, 16)
                                     .foregroundColor(Color.black)
                                     .shadow(radius: 10)
-                                }
-                                Button(action: {
-                                    generateHapticFeedback()
-                                    tutorialNum = 13
-                                }) {
-                                HStack {
-                                    Text("次へ")
-                                    Image(systemName: "chevron.forward.circle")
-                                }
-                                .padding(5)
-                                .font(.system(size: 20.0))
-                                .padding(.all, 8.0)
-                                .background(Color.white)
-                                .cornerRadius(20)
-                                .padding(.horizontal, 16)
-                                .foregroundColor(Color.black)
-                                .shadow(radius: 10)
                                 }
                             }
                             .background(GeometryReader { geometry in
@@ -1063,33 +1044,33 @@ struct TodoListView: View {
                                 .frame(height: buttonRect5.minY - bubbleHeight5)
                             VStack(alignment: .trailing, spacing: 10) {
                                 HStack {
-                                Text("「背景」までカスタマイズできます\n自分好みのTODOアプリにしてみましょう！")
-                                    .font(.callout)
+                                    Text("「背景」までカスタマイズできます\n自分好みのTODOアプリにしてみましょう！")
+                                        .font(.callout)
+                                        .padding(5)
+                                        .font(.system(size: 24.0))
+                                        .padding(.all, 8.0)
+                                        .background(Color.white)
+                                        .cornerRadius(20)
+                                        .padding(.horizontal, 16)
+                                        .foregroundColor(Color.black)
+                                        .shadow(radius: 10)
+                                }
+                                Button(action: {
+                                    generateHapticFeedback()
+                                    tutorialNum = 0
+                                }) {
+                                    HStack {
+                                        Text("次へ")
+                                        Image(systemName: "chevron.forward.circle")
+                                    }
                                     .padding(5)
-                                    .font(.system(size: 24.0))
+                                    .font(.system(size: 20.0))
                                     .padding(.all, 8.0)
                                     .background(Color.white)
                                     .cornerRadius(20)
                                     .padding(.horizontal, 16)
                                     .foregroundColor(Color.black)
                                     .shadow(radius: 10)
-                                }
-                                Button(action: {
-                                    generateHapticFeedback()
-                                    tutorialNum = 0
-                                }) {
-                                HStack {
-                                    Text("次へ")
-                                    Image(systemName: "chevron.forward.circle")
-                                }
-                                .padding(5)
-                                .font(.system(size: 20.0))
-                                .padding(.all, 8.0)
-                                .background(Color.white)
-                                .cornerRadius(20)
-                                .padding(.horizontal, 16)
-                                .foregroundColor(Color.black)
-                                .shadow(radius: 10)
                                 }
                             }
                             .background(GeometryReader { geometry in

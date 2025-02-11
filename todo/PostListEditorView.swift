@@ -52,7 +52,7 @@ struct PostListEditorView: View {
         ColorCategory(name: "薄緑", color: Color(hex: "#ADFF2F")),  // YellowGreen
         ColorCategory(name: "灰", color: Color(hex: "#808080")),    // Gray
         ColorCategory(name: "水", color: Color(hex: "#00BFFF")),    // DeepSkyBlue
-        ColorCategory(name: "薄水", color: Color(hex: "#87CEFA")),  // LightSkyBlue
+        // ColorCategory(name: "薄水", color: Color(hex: "#87CEFA")),  // LightSkyBlue
         ColorCategory(name: "青", color: Color(hex: "#0000FF")),    // Blue
         ColorCategory(name: "緑", color: Color(hex: "#008000")),    // Green
         
@@ -192,7 +192,6 @@ struct PostListEditorView: View {
                                 generateHapticFeedback()
                                 withAnimation {
                                     userSettingsViewModel.updatePostListImage(named: imageName)
-                                    userSettingsViewModel.updatePostListColor(Color(hex: "#FFFFFF"))
                                 }
                             }) {
                                 Image(imageName)
@@ -227,12 +226,8 @@ struct PostListEditorView: View {
         .background(Color("backgroundColor"))
         .onAppear{
                 // 投稿一覧色に基づいてフィルタリング
-                if let category = closestColorCategory(to: userSettingsViewModel.postListColor) {
-                    filteredImageNames = predefinedBackgroundImageNames
-                } else {
-                    filteredImageNames = predefinedBackgroundImageNames
-                    print("色カテゴリが見つからなかったため、全ての画像を表示")
-                }
+                filteredImageNames = predefinedBackgroundImageNames
+
                 DispatchQueue.main.async {
                     isInitializing = false
                 }
@@ -276,7 +271,7 @@ struct PostListEditorView: View {
                                     
                                     if selectedCategory?.name == category.name {
                                         Image(systemName: "checkmark")
-                                            .foregroundColor(.white)
+                                            .foregroundColor(selectedCategory?.name ==  "白" || selectedCategory?.name ==  "黄" ? .black : .white)
                                             .font(.system(size: 20, weight: .bold))
                                     }
                                 }
@@ -289,7 +284,7 @@ struct PostListEditorView: View {
             .padding()
             .presentationDetents([.large,
                                   .height(280),
-                                  .fraction(isSmallDevice() ? 0.4 : 0.35)
+                                  .fraction(isSmallDevice() ? 0.32 : 0.23)
             ])
         }
     }

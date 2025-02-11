@@ -20,9 +20,6 @@ struct CalendarView: View {
                 Image(uiImage: uiImage)
                     .resizable()
                     .edgesIgnoringSafeArea(.all)
-            } else {
-                userSettingsViewModel.backgroundColor
-                    .ignoresSafeArea()
             }
             VStack {
 
@@ -67,9 +64,6 @@ struct CalendarView: View {
                                let uiImage = UIImage(named: headerImageName) {
                                 Image(uiImage: uiImage)
                                     .resizable()
-                                    .edgesIgnoringSafeArea(.all)
-                            } else {
-                                userSettingsViewModel.headerColor
                                     .edgesIgnoringSafeArea(.all)
                             }
                         }
@@ -183,9 +177,6 @@ struct CalendarView: View {
                                        let uiImage = UIImage(named: headerImageName) {
                                         Image(uiImage: uiImage)
                                             .resizable()
-                                            .edgesIgnoringSafeArea(.all)
-                                    } else {
-                                        userSettingsViewModel.postListColor
                                             .edgesIgnoringSafeArea(.all)
                                     }
                                 }

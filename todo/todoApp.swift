@@ -15,8 +15,13 @@ class AppDelegate: NSObject, UIApplicationDelegate {
       FirebaseApp.configure()
       let authManager = AuthManager()
       authManager.anonymousSignIn(){
+          let userDefaults = UserDefaults.standard
+          if !userDefaults.bool(forKey: "hasLaunchedSignUp") {
           self.createSampleSettings()
           self.createSampleTodos()
+          }
+          userDefaults.set(true, forKey: "hasLaunchedSignUp")
+          userDefaults.synchronize()
       }
     return true
   }
@@ -76,7 +81,13 @@ class AppDelegate: NSObject, UIApplicationDelegate {
             ],
             "header": [
                 "headerImageName": "ヘッダ白11",
+                "headerOpacityFlag": false,
                 "headerTextColor": "#000000"
+            ],
+            "postList": [
+                "postListImageName": "投稿一覧白1",
+                "postListOpacityFlag": false,
+                "postListTextColor": "#000000"
             ],
             "plusButton": [
                 "plusButtonImageName": "プラスボタン黒1"
@@ -107,7 +118,7 @@ struct todoApp: App {
             } else {
                TopView()
             }
-        }
+        }.navigationViewStyle(StackNavigationViewStyle())
         .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                 withAnimation {

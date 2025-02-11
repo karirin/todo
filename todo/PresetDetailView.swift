@@ -24,13 +24,6 @@ struct PresetDetailView: View {
                     .padding(.bottom, -30)
                     .padding(.top, 20)
                     .zIndex(1)
-            } else {
-                Color(hex: preset.header.headerColor)  // カスタムのColor拡張でhexを変換
-                    .frame(height: 20)
-                    .clipShape(RoundedCorner(radius: 50, corners: [.topLeft, .topRight]))
-                    .padding(.bottom, -30)
-                    .padding(.top, 20)
-                    .zIndex(1)
             }
             
             // ③ 背景画像 or 背景色
@@ -40,10 +33,6 @@ struct PresetDetailView: View {
                     Image(uiImage: uiImage)
                         .resizable()
                         .scaledToFit()
-                        .frame(height: 210)
-                        .clipShape(RoundedCorner(radius: 10))
-                } else {
-                    Color(hex: preset.background.backgroundColor)
                         .frame(height: 210)
                         .clipShape(RoundedCorner(radius: 10))
                 }
@@ -64,16 +53,6 @@ struct PresetDetailView: View {
                     }
                     .padding(10)
                     .padding(.top)
-                } else {
-                    VStack {
-                        Color(hex: preset.postList.postListColor)
-                            .frame(height: 20)
-                        Color(hex: preset.postList.postListColor)
-                            .frame(height: 20)
-                        Spacer()
-                    }
-                    .padding(10)
-                    .padding(.top)
                 }
                 
                 // ⑤ プラスボタン表示（画像 or 色付き）
@@ -87,22 +66,6 @@ struct PresetDetailView: View {
                                 .resizable()
                                 .scaledToFit()
                                 .frame(height: 20)
-                                .padding(.top, -20)
-                        }
-                        .padding(.bottom, 30)
-                        .padding(.trailing, 10)
-                    }
-                } else {
-                    VStack {
-                        Spacer()
-                        HStack {
-                            Spacer()
-                            Image(systemName: "plus")
-                                .font(.system(size: 15))
-                                .padding(5)
-                                .background(Color(hex: preset.plusButton.plusButtonColor))
-                                .foregroundColor(.white)
-                                .clipShape(Circle())
                                 .padding(.top, -20)
                         }
                         .padding(.bottom, 30)
