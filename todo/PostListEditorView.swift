@@ -138,6 +138,7 @@ struct PostListEditorView: View {
                         Spacer()
                         Text("投稿の背景画像")
                             .font(.headline)
+                            .padding(.horizontal,isSmallDevice() ? -10 : 0)
                         Spacer()
                         Button(action: {
                             generateHapticFeedback()
@@ -165,8 +166,7 @@ struct PostListEditorView: View {
                         Button(action: {
                             generateHapticFeedback()
                             withAnimation {
-                                userSettingsViewModel.clearPostListImage()
-                                userSettingsViewModel.updatePostListColor(Color(hex: "#FFFFFF"))
+                                userSettingsViewModel.updatePostListImage(named: "投稿一覧白1")
                                 print("背景無しを選択")
                             }
                         }) {

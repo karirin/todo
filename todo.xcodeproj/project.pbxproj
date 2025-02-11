@@ -22,6 +22,8 @@
 		1801FFFB2D4CED45007625A2 /* TestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1801FFFA2D4CED45007625A2 /* TestView.swift */; };
 		1801FFFD2D4E0791007625A2 /* PresetEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1801FFFC2D4E0791007625A2 /* PresetEditorView.swift */; };
 		1801FFFF2D54EB14007625A2 /* PresetDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1801FFFE2D54EB14007625A2 /* PresetDetailView.swift */; };
+		18345B892D57944D000577DE /* SplashScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18345B882D57944D000577DE /* SplashScreenView.swift */; };
+		18345B8B2D57A8EC000577DE /* LoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18345B8A2D57A8EC000577DE /* LoadingView.swift */; };
 		189F952C2D43BBC50066E6CF /* todoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 189F952B2D43BBC50066E6CF /* todoApp.swift */; };
 		189F95302D43BBC70066E6CF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 189F952F2D43BBC70066E6CF /* Assets.xcassets */; };
 		189F95332D43BBC70066E6CF /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 189F95322D43BBC70066E6CF /* Preview Assets.xcassets */; };
@@ -68,6 +70,8 @@
 		1801FFFA2D4CED45007625A2 /* TestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestView.swift; sourceTree = "<group>"; };
 		1801FFFC2D4E0791007625A2 /* PresetEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresetEditorView.swift; sourceTree = "<group>"; };
 		1801FFFE2D54EB14007625A2 /* PresetDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresetDetailView.swift; sourceTree = "<group>"; };
+		18345B882D57944D000577DE /* SplashScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashScreenView.swift; sourceTree = "<group>"; };
+		18345B8A2D57A8EC000577DE /* LoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingView.swift; sourceTree = "<group>"; };
 		189F95282D43BBC50066E6CF /* todo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = todo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		189F952B2D43BBC50066E6CF /* todoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = todoApp.swift; sourceTree = "<group>"; };
 		189F952F2D43BBC70066E6CF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -148,10 +152,12 @@
 				189F952B2D43BBC50066E6CF /* todoApp.swift */,
 				1801FFEE2D45DC8E007625A2 /* CalendarView.swift */,
 				1801FFEC2D45DC6F007625A2 /* TodoListView.swift */,
+				18345B8A2D57A8EC000577DE /* LoadingView.swift */,
 				1801FFFA2D4CED45007625A2 /* TestView.swift */,
 				1801FFEA2D45DC50007625A2 /* AddPostView.swift */,
 				1801FFE62D45DBF9007625A2 /* TodoViewModel.swift */,
 				1801FFE82D45DC28007625A2 /* TopView.swift */,
+				18345B882D57944D000577DE /* SplashScreenView.swift */,
 				1801FFE42D45DBB0007625A2 /* BackgroundColorView.swift */,
 				1801FFF02D45E8FC007625A2 /* BackgroundImageView.swift */,
 				1801FFF62D491686007625A2 /* PostListEditorView.swift */,
@@ -503,11 +509,13 @@
 				189F952C2D43BBC50066E6CF /* todoApp.swift in Sources */,
 				1801FFFF2D54EB14007625A2 /* PresetDetailView.swift in Sources */,
 				1801FFEB2D45DC50007625A2 /* AddPostView.swift in Sources */,
+				18345B892D57944D000577DE /* SplashScreenView.swift in Sources */,
 				1801FFEF2D45DC8E007625A2 /* CalendarView.swift in Sources */,
 				1801FFF52D46897E007625A2 /* HeaderEditorView.swift in Sources */,
 				1801FFF72D491686007625A2 /* PostListEditorView.swift in Sources */,
 				1801FFF92D4A6675007625A2 /* PlusButtonEditorView.swift in Sources */,
 				1801FFE52D45DBB0007625A2 /* BackgroundColorView.swift in Sources */,
+				18345B8B2D57A8EC000577DE /* LoadingView.swift in Sources */,
 				1801FFF32D45E91A007625A2 /* SettingsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -677,6 +685,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = todo/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "メイクToDo";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -709,6 +718,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = todo/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "メイクToDo";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

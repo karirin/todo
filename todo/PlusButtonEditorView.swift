@@ -14,6 +14,14 @@ struct PlusButtonEditorView: View {
     @State private var selectedImageName: String? = nil
     @State private var filteredImageNames: [String] = []
     @State private var isColorSheetPresented: Bool = false
+    @State private var buttonRect: CGRect = .zero
+    @State private var bubbleHeight: CGFloat = 0.0
+    @State private var buttonRect2: CGRect = .zero
+    @State private var bubbleHeight2: CGFloat = 0.0
+    @State private var buttonRect3: CGRect = .zero
+    @State private var bubbleHeight3: CGFloat = 0.0
+    @State private var buttonRect4: CGRect = .zero
+    @State private var bubbleHeight4: CGFloat = 0.0
     
     // 予めアセットに追加されている画像名を列挙
     let predefinedPlusButtonImageNames: [String] = [
@@ -52,8 +60,10 @@ struct PlusButtonEditorView: View {
     
     @State private var selectedCategory: ColorCategory? = nil
     @State private var showCheckmark: Bool = false
+    @Binding var tutorialNum: Int
     
     var body: some View {
+        ZStack{
         VStack(spacing: 20) {
             
             // プラスボタンの画像選択セクション
@@ -95,6 +105,9 @@ struct PlusButtonEditorView: View {
                             RoundedRectangle(cornerRadius: 10)
                                 .stroke(Color.gray, lineWidth: 1)
                         )
+                        .background(GeometryReader { geometry in
+                            Color.clear.preference(key: ViewPositionKey4.self, value: [geometry.frame(in: .global)])
+                        })
                     }
                 }
                 ScrollView {
@@ -128,6 +141,9 @@ struct PlusButtonEditorView: View {
                         // プリセット画像選択オプション
                         ForEach(filteredImageNames, id: \.self) { imageName in
                             Button(action: {
+                                if tutorialNum == 8 {
+                                    tutorialNum = 9
+                                }
                                 generateHapticFeedback()
                                 userSettingsViewModel.updatePlusButtonImage(named: imageName)
                                 selectedImageName = imageName
@@ -142,11 +158,27 @@ struct PlusButtonEditorView: View {
                                 }
                                 .background(selectedImageName == imageName ? Color.gray.opacity(0.3) : Color.clear)
                                 .cornerRadius(8)
-                            }
+                            }        
+                            .background(
+                                ZStack {
+                                    // プラスボタン紫6 だけ GeometryReader を付与
+                                    if imageName == "プラスボタン紫6" {
+                                        GeometryReader { geometry in
+                                            Color.clear
+                                                .preference(key: ViewPositionKey5.self, value: [geometry.frame(in: .global)])
+                                        }
+                                    } else {
+                                        Color.clear
+                                    }
+                                }
+                            )
                         }
                     }
                     .padding(.horizontal)
                 }
+                .background(GeometryReader { geometry in
+                    Color.clear.preference(key: ViewPositionKey3.self, value: [geometry.frame(in: .global)])
+                })
             }
             Button(action: {
                                     presentationMode.wrappedValue.dismiss()  // 画面を閉じて戻る
@@ -159,8 +191,361 @@ struct PlusButtonEditorView: View {
                                         .background(Color.black)
                                         .cornerRadius(8)
                                 }
+                                .background(GeometryReader { geometry in
+                                    Color.clear.preference(key: ViewPositionKey6.self, value: [geometry.frame(in: .global)])
+                                })
         }
         .padding()
+            if tutorialNum == 5 {
+                GeometryReader { geometry in
+                    Color.black.opacity(0.5)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .frame(width: buttonRect.width, height: buttonRect.height)
+                                .position(x: buttonRect.midX, y: isSmallDevice() ? buttonRect.midY - 40 : buttonRect.midY - 70)
+                                .blendMode(.destinationOut)
+                        )
+                        .ignoresSafeArea()
+                        .compositingGroup()
+                        .background(.clear)
+                        .onTapGesture {
+                            generateHapticFeedback()
+                            tutorialNum = 6
+                        }
+                }
+                VStack {
+                    Spacer()
+                    VStack(alignment: .trailing, spacing: 10) {
+                        HStack {
+                        Text("自分の好みのボタンを選択することができます")
+                            .font(.callout)
+                            .padding(5)
+                            .font(.system(size: 24.0))
+                            .padding(.all, 8.0)
+                            .background(Color.white)
+                            .cornerRadius(20)
+                            .padding(.horizontal, 8)
+                            .foregroundColor(Color.black)
+                            .shadow(radius: 10)
+                        }
+                        Button(action: {
+                            generateHapticFeedback()
+                            tutorialNum = 6
+                        }) {
+                        HStack {
+                            Text("次へ")
+                            Image(systemName: "chevron.forward.circle")
+                        }
+                        .padding(5)
+                        .font(.system(size: 20.0))
+                        .padding(.all, 8.0)
+                        .background(Color.white)
+                        .cornerRadius(20)
+                        .padding(.horizontal, 16)
+                        .foregroundColor(Color.black)
+                        .shadow(radius: 10)
+                        }
+                    }
+                    .background(GeometryReader { geometry in
+                        Path { _ in
+                            DispatchQueue.main.async {
+                                self.bubbleHeight = geometry.size.height
+                            }
+                        }
+                    })
+                    Spacer()
+                        .frame(height: buttonRect.minY - bubbleHeight + 150)
+                }
+                .ignoresSafeArea()
+                VStack{
+                    Spacer()
+                    HStack{
+                        Button(action: {
+                            generateHapticFeedback()
+                            tutorialNum = 0
+                        }) {
+                            HStack {
+                                Image(systemName: "chevron.left.2")
+                                Text("スキップ")
+                            }
+                            .padding(5)
+                            .font(.system(size: 20.0))
+                            .padding(.all, 8.0)
+                            .background(Color.white)
+                            .cornerRadius(20)
+                            .padding(.horizontal, 8)
+                            .foregroundColor(Color.black)
+                            .shadow(radius: 10)
+                        }
+                        Spacer()
+                    }
+                    .padding()
+                }
+            }
+            if tutorialNum == 6 {
+                GeometryReader { geometry in
+                    Color.black.opacity(0.5)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .frame(width: buttonRect2.width, height: buttonRect2.height)
+                                .position(x: buttonRect2.midX, y: isSmallDevice() ? buttonRect2.midY - 40 : buttonRect2.midY - 70)
+                                .blendMode(.destinationOut)
+                        )
+                        .ignoresSafeArea()
+                        .compositingGroup()
+                        .background(.clear)
+                        .onTapGesture {
+                            generateHapticFeedback()
+                            tutorialNum = 7
+                        }
+                }
+                VStack {
+                    Spacer()
+                        .frame(height: isSmallDevice() ? buttonRect2.minY - bubbleHeight2 + 130 : buttonRect2.minY - bubbleHeight2 + 100)
+                    VStack(alignment: .trailing, spacing: 10) {
+                        HStack {
+                            Spacer()
+                        Text("「色で探す」ボタンで絞り込み検索することもできます")
+                            .font(.callout)
+                            .padding(5)
+                            .font(.system(size: 24.0))
+                            .padding(.all, 8.0)
+                            .background(Color.white)
+                            .cornerRadius(20)
+                            .padding(.horizontal, 16)
+                            .foregroundColor(Color.black)
+                            .shadow(radius: 10)
+                        }
+                        Button(action: {
+                            generateHapticFeedback()
+                            tutorialNum = 7
+                        }) {
+                        HStack {
+                            Text("次へ")
+                            Image(systemName: "chevron.forward.circle")
+                        }
+                        .padding(5)
+                        .font(.system(size: 20.0))
+                        .padding(.all, 8.0)
+                        .background(Color.white)
+                        .cornerRadius(20)
+                        .padding(.horizontal, 16)
+                        .foregroundColor(Color.black)
+                        .shadow(radius: 10)
+                        }
+                    }
+                    .background(GeometryReader { geometry in
+                        Path { _ in
+                            DispatchQueue.main.async {
+                                self.bubbleHeight2 = geometry.size.height
+                            }
+                        }
+                    })
+                    Spacer()
+                }
+                .ignoresSafeArea()
+                VStack{
+                    Spacer()
+                    HStack{
+                        Button(action: {
+                            generateHapticFeedback()
+                            tutorialNum = 0
+                        }) {
+                            HStack {
+                                Image(systemName: "chevron.left.2")
+                                Text("スキップ")
+                            }
+                            .padding(5)
+                            .font(.system(size: 20.0))
+                            .padding(.all, 8.0)
+                            .background(Color.white)
+                            .cornerRadius(20)
+                            .padding(.horizontal, 8)
+                            .foregroundColor(Color.black)
+                            .shadow(radius: 10)
+                        }
+                        Spacer()
+                    }
+                    .padding()
+                }
+            }
+            if tutorialNum == 7 {
+                GeometryReader { geometry in
+                    Color.black.opacity(0.5)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .frame(width: buttonRect3.width, height: buttonRect3.height)
+                                .position(x: buttonRect3.midX, y: isSmallDevice() ? buttonRect3.midY - 40 :  buttonRect3.midY - 70)
+                                .blendMode(.destinationOut)
+                        )
+                        .ignoresSafeArea()
+                        .compositingGroup()
+                        .background(.clear)
+                        .onTapGesture {
+                            generateHapticFeedback()
+                            tutorialNum = 8
+                        }
+                }
+                VStack {
+                    Spacer()
+                       // .frame(height: buttonRect3.minY - bubbleHeight3 )
+                    VStack(alignment: .trailing, spacing: 10) {
+                        HStack {
+                            Spacer()
+                        Text("試しにこのボタンを選択してみましょう")
+                            .font(.callout)
+                            .padding(5)
+                            .font(.system(size: 24.0))
+                            .padding(.all, 8.0)
+                            .background(Color.white)
+                            .cornerRadius(20)
+                            .padding(.horizontal, 16)
+                            .foregroundColor(Color.black)
+                            .shadow(radius: 10)
+                        }
+                        Button(action: {
+                            generateHapticFeedback()
+                            tutorialNum = 8
+                        }) {
+                        HStack {
+                            Text("次へ")
+                            Image(systemName: "chevron.forward.circle")
+                        }
+                        .padding(5)
+                        .font(.system(size: 20.0))
+                        .padding(.all, 8.0)
+                        .background(Color.white)
+                        .cornerRadius(20)
+                        .padding(.horizontal, 16)
+                        .foregroundColor(Color.black)
+                        .shadow(radius: 10)
+                        }
+                    }
+                    .padding(.bottom, isSmallDevice() ? 0 : 150)
+                    .background(GeometryReader { geometry in
+                        Path { _ in
+                            DispatchQueue.main.async {
+                                self.bubbleHeight3 = geometry.size.height
+                            }
+                        }
+                    })
+                    Spacer()
+                }
+                .ignoresSafeArea()
+                VStack{
+                    Spacer()
+                    HStack{
+                        Button(action: {
+                            generateHapticFeedback()
+                            tutorialNum = 0
+                        }) {
+                            HStack {
+                                Image(systemName: "chevron.left.2")
+                                Text("スキップ")
+                            }
+                            .padding(5)
+                            .font(.system(size: 20.0))
+                            .padding(.all, 8.0)
+                            .background(Color.white)
+                            .cornerRadius(20)
+                            .padding(.horizontal, 8)
+                            .foregroundColor(Color.black)
+                            .shadow(radius: 10)
+                        }
+                        Spacer()
+                    }
+                    .padding()
+                }
+            }
+            if tutorialNum == 9 {
+                GeometryReader { geometry in
+                    Color.black.opacity(0.5)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .padding(-5)
+                                .frame(width: buttonRect4.width, height: buttonRect4.height)
+                                .position(x: buttonRect4.midX, y: isSmallDevice() ? buttonRect4.midY - 40 :  buttonRect4.midY - 70)
+                                .blendMode(.destinationOut)
+                        )
+                        .ignoresSafeArea()
+                        .compositingGroup()
+                        .background(.clear)
+                        .onTapGesture {
+                            generateHapticFeedback()
+                            tutorialNum = 10
+                        }
+                }
+                VStack {
+                    Spacer()
+                        .frame(height: isSmallDevice() ? buttonRect4.minY - bubbleHeight4 - 60 : buttonRect4.minY - bubbleHeight4 - 90)
+                    VStack(alignment: .trailing, spacing: 10) {
+                        HStack {
+                            Spacer()
+                        Text("選択が完了したら「戻る」ボタンをクリックします")
+                            .font(.callout)
+                            .padding(5)
+                            .font(.system(size: 24.0))
+                            .padding(.all, 8.0)
+                            .background(Color.white)
+                            .cornerRadius(20)
+                            .padding(.horizontal, 16)
+                            .foregroundColor(Color.black)
+                            .shadow(radius: 10)
+                        }
+                        Button(action: {
+                            generateHapticFeedback()
+                            tutorialNum = 10
+                        }) {
+                        HStack {
+                            Text("次へ")
+                            Image(systemName: "chevron.forward.circle")
+                        }
+                        .padding(5)
+                        .font(.system(size: 20.0))
+                        .padding(.all, 8.0)
+                        .background(Color.white)
+                        .cornerRadius(20)
+                        .padding(.horizontal, 16)
+                        .foregroundColor(Color.black)
+                        .shadow(radius: 10)
+                        }
+                    }
+                    .background(GeometryReader { geometry in
+                        Path { _ in
+                            DispatchQueue.main.async {
+                                self.bubbleHeight4 = geometry.size.height
+                            }
+                        }
+                    })
+                    Spacer()
+                }
+                .ignoresSafeArea()
+                VStack{
+                    HStack{
+                        Button(action: {
+                            generateHapticFeedback()
+                            tutorialNum = 0
+                        }) {
+                            HStack {
+                                Image(systemName: "chevron.left.2")
+                                Text("スキップ")
+                            }
+                            .padding(5)
+                            .font(.system(size: 20.0))
+                            .padding(.all, 8.0)
+                            .background(Color.white)
+                            .cornerRadius(20)
+                            .padding(.horizontal, 8)
+                            .foregroundColor(Color.black)
+                            .shadow(radius: 10)
+                        }
+                        Spacer()
+                    }
+                    .padding()
+                    Spacer()
+                }
+            }
+        }
         .sheet(isPresented: $isColorSheetPresented) {
             VStack(spacing: 20) {
                 Text("色を選択")
@@ -216,6 +601,19 @@ struct PlusButtonEditorView: View {
                                   .fraction(isSmallDevice() ? 0.4 : 0.35)
             ])
         }
+        
+        .onPreferenceChange(ViewPositionKey3.self) { positions in
+            self.buttonRect = positions.first ?? .zero
+        }
+        .onPreferenceChange(ViewPositionKey4.self) { positions in
+            self.buttonRect2 = positions.first ?? .zero
+        }
+        .onPreferenceChange(ViewPositionKey5.self) { positions in
+            self.buttonRect3 = positions.first ?? .zero
+        }
+        .onPreferenceChange(ViewPositionKey6.self) { positions in
+            self.buttonRect4 = positions.first ?? .zero
+        }
         .background(Color("backgroundColor"))
         .onAppear {
                 selectedColor =  userSettingsViewModel.plusButtonColor
@@ -235,6 +633,6 @@ struct PlusButtonEditorView: View {
 
 struct PlusButtonEditorView_Previews: PreviewProvider {
     static var previews: some View {
-        PlusButtonEditorView(userSettingsViewModel: UserSettingsViewModel(userID: AuthManager().currentUserId!))
+        PlusButtonEditorView(userSettingsViewModel: UserSettingsViewModel(userID: AuthManager().currentUserId!), tutorialNum: .constant(9))
     }
 }

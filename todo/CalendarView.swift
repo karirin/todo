@@ -194,6 +194,7 @@ struct CalendarView: View {
                             .padding(.horizontal)
                             .padding(.bottom, 10)
                             .onTapGesture {
+                                generateHapticFeedback()
                                 todoViewModel.toggleCompletion(of: item)
                             }
                         }

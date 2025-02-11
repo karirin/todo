@@ -52,10 +52,10 @@ struct AddPostView: View {
                                 Image(systemName: "calendar.circle")
                                     .font(.system(size: isSmallDevice() ? 20 : 24))
                                 Text(" \(formattedDate(selectedDate))")
-                                    .font(.system(size: 20))
+                                    .font(.system(size:isSmallDevice() ? 18 : 20))
                                     .padding(.leading, -8)
                             }
-                            .padding(5)
+                            .padding(isSmallDevice() ? 8 : 5)
                             .padding(.horizontal,5)
                             .foregroundColor(.gray)
                             .overlay(

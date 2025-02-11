@@ -82,6 +82,7 @@ class UserSettingsViewModel: ObservableObject {
     @Published var plusButtonColor: Color = .black
     @Published var plusButtonImageName: String? = nil
     @Published var presets: [String: UserSettings] = [:]
+    @Published var isLoading: Bool = true
     
     private var ref: DatabaseReference
     private var handle: DatabaseHandle?
@@ -252,6 +253,9 @@ class UserSettingsViewModel: ObservableObject {
                     self.plusButtonImageName = nil
                     print("設定が存在しないため、デフォルト値を適用")
                 }
+            }
+            DispatchQueue.main.async {
+                self.isLoading = false
             }
         })
     }

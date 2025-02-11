@@ -150,6 +150,7 @@ struct HeaderEditorView: View {
                 Spacer()
                 Text("ヘッダーを選択")
                     .font(.headline)
+                    .padding(.horizontal,isSmallDevice() ? -10 : 0)
                 Spacer()
                 Button(action: {
                     generateHapticFeedback()
@@ -175,7 +176,7 @@ struct HeaderEditorView: View {
                     Button(action: {
                         generateHapticFeedback()
                         withAnimation {
-                            userSettingsViewModel.clearHeaderImage()
+                            userSettingsViewModel.updateHeaderImage(named: "ヘッダ白1")
                         }
                     }) {
                         ZStack {
