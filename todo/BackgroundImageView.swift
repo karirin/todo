@@ -20,7 +20,10 @@ struct BackgroundImageView: View {
     @State private var selectedColor: Color = Color.white
     @State private var filteredImageNames: [String] = []
     @State private var isColorSheetPresented: Bool = false
+    @State private var preFlag: Bool = false
     @Environment(\.presentationMode) var presentationMode
+    @State private var userPreFlag: Int = 0
+    @ObservedObject var authManager: AuthManager
 
     let predefinedBackgroundImageNames: [String] = [
         "紫1", "紫2", "紫3", "紫4", "紫5", "紫6", "紫7", "紫8", "紫9", "紫10",
@@ -39,21 +42,18 @@ struct BackgroundImageView: View {
     ]
     
     let colorCategories: [ColorCategory] = [
-        ColorCategory(name: "黄", color: Color(hex: "#FFFF00")),    // Yellow
-        ColorCategory(name: "黄緑", color: Color(hex: "#ADFF2F")),  // YellowGreen
+        ColorCategory(name: "白", color: Color(hex: "#FFFFFF")),    // White
+        ColorCategory(name: "黒", color: Color(hex: "#000000")),    // Black
         ColorCategory(name: "灰", color: Color(hex: "#808080")),    // Gray
-        ColorCategory(name: "水", color: Color(hex: "#00BFFF")),    // DeepSkyBlue
-        // ColorCategory(name: "薄水", color: Color(hex: "#87CEFA")),  // LightSkyBlue
-        ColorCategory(name: "青", color: Color(hex: "#0000FF")),    // Blue
-        ColorCategory(name: "緑", color: Color(hex: "#008000")),    // Green
-        
-        // 追加する色カテゴリ
-        ColorCategory(name: "紫", color: Color(hex: "#800080")),    // Purple
         ColorCategory(name: "赤", color: Color(hex: "#FF0000")),    // Red
         ColorCategory(name: "橙", color: Color(hex: "#FFA500")),    // Orange
-        ColorCategory(name: "桃", color: Color(hex: "#FFDAB9")),    // Peach
-        ColorCategory(name: "黒", color: Color(hex: "#000000")),    // Black
-        ColorCategory(name: "白", color: Color(hex: "#FFFFFF")),    // White
+        ColorCategory(name: "黄", color: Color(hex: "#FFFF00")),    // Yellow
+        ColorCategory(name: "薄緑", color: Color(hex: "#ADFF2F")),  // YellowGreen
+        ColorCategory(name: "緑", color: Color(hex: "#008000")),    // Green
+        ColorCategory(name: "水", color: Color(hex: "#00BFFF")),    // DeepSkyBlue
+        ColorCategory(name: "青", color: Color(hex: "#0000FF")),    // Blue
+        ColorCategory(name: "紫", color: Color(hex: "#800080")),    // Purple
+        ColorCategory(name: "桃", color: Color(hex: "#FF66C4")),    // Peach
     ]
         
     var body: some View {
@@ -71,7 +71,6 @@ struct BackgroundImageView: View {
                         Text("色で探す")
                     }
                     .padding(5)
-                    .foregroundColor(.gray)
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
                             .stroke(Color.gray, lineWidth: 1)
@@ -129,22 +128,41 @@ struct BackgroundImageView: View {
                         ForEach(filteredImageNames, id: \.self) { imageName in
                             Button(action: {
                                 generateHapticFeedback()
-                                withAnimation {
-                                    // 事前定義された画像を選択
-                                    userSettingsViewModel.updateBackgroundImage(named: imageName)
-                                    
-                                    
+                                if let number = extractNumber(from: imageName), (6...10).contains(number) {
+                                    if authManager.userPreFlag == 0 {
+                                        preFlag = true
+                                    } else {
+                                        withAnimation {
+                                            userSettingsViewModel.updateBackgroundImage(named: imageName)
+                                        }
+                                    }
+                                } else {
+                                    withAnimation {
+                                        userSettingsViewModel.updateBackgroundImage(named: imageName)
+                                    }
                                 }
                             }) {
-                                Image(imageName)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .cornerRadius(10)
-                                    .clipped()
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 10)
-                                            .stroke(userSettingsViewModel.backgroundImageName == imageName ? Color.black : Color.clear, lineWidth: 4)
-                                    )
+                                ZStack(alignment: .bottomTrailing) {
+                                    Image(imageName)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .cornerRadius(10)
+                                        .clipped()
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .stroke(userSettingsViewModel.backgroundImageName == imageName ? Color.black : Color.clear, lineWidth: 4)
+                                        )
+                                    if let number = extractNumber(from: imageName), (6...10).contains(number) {
+                                        Image(systemName: "crown.fill")
+                                            .foregroundColor(.yellow)
+                                            .font(.system(size: 20))
+                                            .padding(5)
+                                            .background(Color.black.opacity(0.7))
+                                            .cornerRadius(10)
+                                            .padding(10)
+                                            .opacity(authManager.userPreFlag == 0 ? 1 : 0)
+                                    }
+                                }
                             }
                         }
                     }
@@ -166,9 +184,17 @@ struct BackgroundImageView: View {
                     .cornerRadius(8)
             }.padding()
         }
+        .fullScreenCover(isPresented: $preFlag) {
+            PreView(changeTitle: .constant(2))
+        }
+        .foregroundColor(Color("fontGray"))
         .background(Color("backgroundColor"))
         .onAppear {
             filteredImageNames = predefinedBackgroundImageNames
+            authManager.fetchPreFlag{}
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                userPreFlag = authManager.userPreFlag
+            }
         }
         .sheet(isPresented: $isColorSheetPresented) {
             VStack(spacing: 10) {
@@ -202,6 +228,10 @@ struct BackgroundImageView: View {
                                         .frame(width: 50, height: 50)
                                         .overlay(
                                             Circle()
+                                                .stroke(category.name == "白" ? Color.black : Color.clear, lineWidth: 1)
+                                        )
+                                        .overlay(
+                                            Circle()
                                                 .stroke(selectedCategory?.name == category.name ? Color.black : Color.clear, lineWidth: 3)
                                         )
                                     
@@ -215,7 +245,6 @@ struct BackgroundImageView: View {
                         }
                     }
                 }
-                
                 // キャンセルボタン
 //                Button(action: {
 //                    generateHapticFeedback()
@@ -227,6 +256,9 @@ struct BackgroundImageView: View {
 //                }
             }
             .padding()
+            .padding(.bottom)
+            .foregroundColor(Color("fontGray"))
+            .background(Color("backgroundColor"))
             .presentationDetents([.large,
                                   .height(280),
                                   .fraction(isSmallDevice() ? 0.30 : 0.23)
@@ -241,6 +273,12 @@ struct BackgroundImageView: View {
     private func generateHapticFeedback() {
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.impactOccurred()
+    }
+    
+    func extractNumber(from imageName: String) -> Int? {
+        let digits = imageName.compactMap { $0.wholeNumberValue }
+        let numberString = digits.map(String.init).joined()
+        return Int(numberString)
     }
     
     func closestColorCategory(to color: Color) -> ColorCategory? {
@@ -268,6 +306,6 @@ struct BackgroundImageView: View {
 
 struct BackgroundImageView_Previews: PreviewProvider {
     static var previews: some View {
-        BackgroundImageView(userSettingsViewModel: UserSettingsViewModel())
+        BackgroundImageView(userSettingsViewModel: UserSettingsViewModel(), authManager: AuthManager())
     }
 }

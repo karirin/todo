@@ -15,16 +15,19 @@ struct PostListEditorView: View {
     @State private var selectedTextColor: Color = .black
     @State private var postListOpacityFlag: Bool = false
     @State private var isInitializing: Bool = true
+    @State private var preFlag: Bool = false
+    @ObservedObject var authManager: AuthManager
+    @State private var userPreFlag: Int = 0
     
     let predefinedColors: [String] = [
         "#FEFEFE", // White
         "#000000", // Black
-        "#808080", // Gray
         "#FE0000", // Red
-        "#FEA500", // Orange
-        "#FEFE00", // Yellow
         "#008000", // Green
         "#0000FE", // Blue
+        "#FEFE00", // Yellow
+        "#808080", // Gray
+        "#FEA500", // Orange
         "#800080", // Purple
         "#A52A2A"  // Brown
     ]
@@ -45,24 +48,19 @@ struct PostListEditorView: View {
         "投稿一覧白1", "投稿一覧白2", "投稿一覧白3", "投稿一覧白4", "投稿一覧白5", "投稿一覧白6", "投稿一覧白7", "投稿一覧白8", "投稿一覧白9", "投稿一覧白10","投稿一覧白11"
     ]
     
-    
-    // 色カテゴリ
     let colorCategories: [ColorCategory] = [
-        ColorCategory(name: "黄", color: Color(hex: "#FFFF00")),    // Yellow
-        ColorCategory(name: "薄緑", color: Color(hex: "#ADFF2F")),  // YellowGreen
+        ColorCategory(name: "白", color: Color(hex: "#FFFFFF")),    // White
+        ColorCategory(name: "黒", color: Color(hex: "#000000")),    // Black
         ColorCategory(name: "灰", color: Color(hex: "#808080")),    // Gray
-        ColorCategory(name: "水", color: Color(hex: "#00BFFF")),    // DeepSkyBlue
-        // ColorCategory(name: "薄水", color: Color(hex: "#87CEFA")),  // LightSkyBlue
-        ColorCategory(name: "青", color: Color(hex: "#0000FF")),    // Blue
-        ColorCategory(name: "緑", color: Color(hex: "#008000")),    // Green
-        
-        // 追加する色カテゴリ
-        ColorCategory(name: "紫", color: Color(hex: "#800080")),    // Purple
         ColorCategory(name: "赤", color: Color(hex: "#FF0000")),    // Red
         ColorCategory(name: "橙", color: Color(hex: "#FFA500")),    // Orange
-        ColorCategory(name: "桃", color: Color(hex: "#FFDAB9")),    // Peach
-        ColorCategory(name: "黒", color: Color(hex: "#000000")),    // Black
-        ColorCategory(name: "白", color: Color(hex: "#FFFFFF")),    // White
+        ColorCategory(name: "黄", color: Color(hex: "#FFFF00")),    // Yellow
+        ColorCategory(name: "薄緑", color: Color(hex: "#ADFF2F")),  // YellowGreen
+        ColorCategory(name: "緑", color: Color(hex: "#008000")),    // Green
+        ColorCategory(name: "水", color: Color(hex: "#00BFFF")),    // DeepSkyBlue
+        ColorCategory(name: "青", color: Color(hex: "#0000FF")),    // Blue
+        ColorCategory(name: "紫", color: Color(hex: "#800080")),    // Purple
+        ColorCategory(name: "桃", color: Color(hex: "#FF66C4")),    // Peach
     ]
     
     // 選択された色カテゴリ
@@ -74,14 +72,37 @@ struct PostListEditorView: View {
     // カラーカテゴリ選択シートの表示フラグ
     @State private var isColorSheetPresented: Bool = false
     
+    @State private var isTextColorPickerExpanded = false
+    
     var body: some View {
         VStack(spacing: 20) {
-            Text("文字色を選択")
-                .font(.headline)
-                .padding(.top)
-            
+            Button(action: {
+                isTextColorPickerExpanded.toggle()
+                generateHapticFeedback()
+            }) {
+                HStack{
+                    Text("もっと見る")
+                        .padding(5)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.gray, lineWidth: 1)
+                        )
+                        .opacity(0)
+                    Spacer()
+                    Text("文字色を選択")
+                        .font(.headline)
+                    Spacer()
+                    Text("もっと見る")
+                        .padding(5)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.gray, lineWidth: 1)
+                        )
+                }.padding(.horizontal)
+            }
+            .padding(.top)
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 20) {
-                ForEach(predefinedColors, id: \.self) { color in
+                ForEach(predefinedColors.prefix(isTextColorPickerExpanded ? 10 : 5), id: \.self) { color in
                     Button(action: {
                         userSettingsViewModel.updateTodoTextColor(Color(hex:color))
                         generateHapticFeedback()
@@ -90,6 +111,10 @@ struct PostListEditorView: View {
                             Circle()
                                 .fill(Color(hex:color))
                                 .frame(width: 50, height: 50)
+                                .overlay(
+                                    Circle()
+                                        .stroke(color == "#FEFEFE" ? Color.black : Color.clear, lineWidth: 1)
+                                )
                                 .overlay(
                                     Circle()
                                         .stroke(color.lowercased() == userSettingsViewModel.postListTextColor.toHex()!.lowercased() ? Color.black : Color.clear, lineWidth: 3)
@@ -128,7 +153,6 @@ struct PostListEditorView: View {
                                 Text("色で探す")
                             }
                             .padding(5)
-                            .foregroundColor(.gray)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 10)
                                     .stroke(Color.gray, lineWidth: 1)
@@ -150,7 +174,6 @@ struct PostListEditorView: View {
                                 Text("色で探す")
                             }
                             .padding(5)
-                            .foregroundColor(.gray)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 10)
                                     .stroke(Color.gray, lineWidth: 1)
@@ -191,18 +214,48 @@ struct PostListEditorView: View {
                             Button(action: {
                                 generateHapticFeedback()
                                 withAnimation {
-                                    userSettingsViewModel.updatePostListImage(named: imageName)
+                                    if let number = extractNumber(from: imageName), (6...11).contains(number) {
+                                        if authManager.userPreFlag == 0 {
+                                            preFlag = true
+                                        } else {
+                                            withAnimation {
+                                                userSettingsViewModel.updatePostListImage(named: imageName)
+                                            }
+                                        }
+                                    } else {
+                                        withAnimation {
+                                            userSettingsViewModel.updatePostListImage(named: imageName)
+                                        }
+                                    }
                                 }
                             }) {
-                                Image(imageName)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .cornerRadius(10)
-                                    .clipped()
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 10)
-                                            .stroke(userSettingsViewModel.postListImageName == imageName ? Color.black : Color.clear, lineWidth: 3)
-                                    )
+                                ZStack{
+                                    Image(imageName)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .cornerRadius(10)
+                                        .clipped()
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .stroke(userSettingsViewModel.postListImageName == imageName ? Color.black : Color.clear, lineWidth: 3)
+                                        )
+                                    if let number = extractNumber(from: imageName), (6...11).contains(number) {
+                                        HStack{
+                                            Spacer()
+                                            Image(systemName: "crown.fill")
+                                                .foregroundColor(.yellow)
+                                                .font(.system(size: 16))
+                                                .padding(5)
+                                                .background(Color.black.opacity(0.7))
+                                                .cornerRadius(10)
+                                                .padding(.trailing, 10)
+                                                .opacity(authManager.userPreFlag == 0 ? 1 : 0)
+                                        }
+                                    }
+                                }
+                            }
+                            .onAppear{
+                                print("imageName:\(imageName)")
                             }
                         }
                     }
@@ -223,14 +276,21 @@ struct PostListEditorView: View {
                     }.padding()
             }
         }
+        .foregroundColor(Color("fontGray"))
         .background(Color("backgroundColor"))
         .onAppear{
-                // 投稿一覧色に基づいてフィルタリング
-                filteredImageNames = predefinedBackgroundImageNames
-
+            // 投稿一覧色に基づいてフィルタリング
+            filteredImageNames = predefinedBackgroundImageNames
+            authManager.fetchPreFlag{}
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                userPreFlag = authManager.userPreFlag
                 DispatchQueue.main.async {
                     isInitializing = false
                 }
+            }
+        }
+        .fullScreenCover(isPresented: $preFlag) {
+            PreView(changeTitle: .constant(2))
         }
         .sheet(isPresented: $isColorSheetPresented) {
             VStack(spacing: 20) {
@@ -266,6 +326,10 @@ struct PostListEditorView: View {
                                         .frame(width: 50, height: 50)
                                         .overlay(
                                             Circle()
+                                                .stroke(category.name == "白" ? Color.black : Color.clear, lineWidth: 1)
+                                        )
+                                        .overlay(
+                                            Circle()
                                                 .stroke(selectedCategory?.name == category.name ? Color.black : Color.clear, lineWidth: 3)
                                         )
                                     
@@ -281,7 +345,10 @@ struct PostListEditorView: View {
                     }
                 }
             }
+            .foregroundColor(Color("fontGray"))
+            .background(Color("backgroundColor"))
             .padding()
+            .padding(.bottom)
             .presentationDetents([.large,
                                   .height(280),
                                   .fraction(isSmallDevice() ? 0.32 : 0.23)
@@ -293,6 +360,15 @@ struct PostListEditorView: View {
         return UIScreen.main.bounds.width < 390
     }
     
+    func extractNumber(from imageName: String) -> Int? {
+        let pattern = "\\d+$"  // 末尾の連続する数字にマッチ
+        if let range = imageName.range(of: pattern, options: .regularExpression) {
+             let numberString = String(imageName[range])
+             return Int(numberString)
+        }
+        return nil
+    }
+
     private func generateHapticFeedback() {
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.impactOccurred()
@@ -334,7 +410,7 @@ struct PostListEditorView_Previews: PreviewProvider {
     static var previews: some View {
         PostListEditorView(
             todoViewModel: TodoViewModel(),
-            userSettingsViewModel: UserSettingsViewModel()
+            userSettingsViewModel: UserSettingsViewModel(), authManager: AuthManager()
         )
     }
 }

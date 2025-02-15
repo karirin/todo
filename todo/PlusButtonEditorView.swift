@@ -22,6 +22,10 @@ struct PlusButtonEditorView: View {
     @State private var bubbleHeight3: CGFloat = 0.0
     @State private var buttonRect4: CGRect = .zero
     @State private var bubbleHeight4: CGFloat = 0.0
+    @State private var preFlag: Bool = false
+    @State private var userPreFlag: Int = 0
+    @ObservedObject var authManager: AuthManager
+    
     
     // 予めアセットに追加されている画像名を列挙
     let predefinedPlusButtonImageNames: [String] = [
@@ -41,21 +45,18 @@ struct PlusButtonEditorView: View {
     ]
     
     let colorCategories: [ColorCategory] = [
-        ColorCategory(name: "プラスボタン黄", color: Color(hex: "#FFFF00")),    // Yellow
-        ColorCategory(name: "プラスボタン薄緑", color: Color(hex: "#ADFF2F")),  // YellowGreen
+        ColorCategory(name: "プラスボタン白", color: Color(hex: "#FFFFFF")),    // White
+        ColorCategory(name: "プラスボタン黒", color: Color(hex: "#000000")),    // Black
         ColorCategory(name: "プラスボタン灰", color: Color(hex: "#808080")),    // Gray
-        ColorCategory(name: "プラスボタン水", color: Color(hex: "#00BFFF")),    // DeepSkyBlue
-        // ColorCategory(name: "プラスボタン薄水", color: Color(hex: "#87CEFA")),  // LightSkyBlue
-        ColorCategory(name: "プラスボタン青", color: Color(hex: "#0000FF")),    // Blue
-        ColorCategory(name: "プラスボタン緑", color: Color(hex: "#008000")),    // Green
-        
-        // 追加する色カテゴリ
-        ColorCategory(name: "プラスボタン紫", color: Color(hex: "#800080")),    // Purple
         ColorCategory(name: "プラスボタン赤", color: Color(hex: "#FF0000")),    // Red
         ColorCategory(name: "プラスボタン橙", color: Color(hex: "#FFA500")),    // Orange
-        ColorCategory(name: "プラスボタン桃", color: Color(hex: "#FFDAB9")),    // Peach
-        ColorCategory(name: "プラスボタン黒", color: Color(hex: "#000000")),    // Black
-        ColorCategory(name: "プラスボタン白", color: Color(hex: "#FFFFFF")),    // White
+        ColorCategory(name: "プラスボタン黄", color: Color(hex: "#FFFF00")),    // Yellow
+        ColorCategory(name: "プラスボタン薄緑", color: Color(hex: "#ADFF2F")),  // YellowGreen
+        ColorCategory(name: "プラスボタン緑", color: Color(hex: "#008000")),    // Green
+        ColorCategory(name: "プラスボタン水", color: Color(hex: "#00BFFF")),    // DeepSkyBlue
+        ColorCategory(name: "プラスボタン青", color: Color(hex: "#0000FF")),    // Blue
+        ColorCategory(name: "プラスボタン紫", color: Color(hex: "#800080")),    // Purple
+        ColorCategory(name: "プラスボタン桃", color: Color(hex: "#FF66C4")),    // Peach
     ]
     
     @State private var selectedCategory: ColorCategory? = nil
@@ -100,7 +101,6 @@ struct PlusButtonEditorView: View {
                             Text("色で探す")
                         }
                         .padding(5)
-                        .foregroundColor(.gray)
                         .overlay(
                             RoundedRectangle(cornerRadius: 10)
                                 .stroke(Color.gray, lineWidth: 1)
@@ -116,9 +116,8 @@ struct PlusButtonEditorView: View {
                         Button(action: {
                             generateHapticFeedback()
                             withAnimation {
-                                userSettingsViewModel.clearPlusButtonImage()
+                                userSettingsViewModel.updatePlusButtonImage(named: "プラスボタン黒1")
                                 selectedImageName = nil
-                                print("プラスボタン画像をクリア")
                             }
                         }) {
                             ZStack {
@@ -141,28 +140,61 @@ struct PlusButtonEditorView: View {
                         // プリセット画像選択オプション
                         ForEach(filteredImageNames, id: \.self) { imageName in
                             Button(action: {
-                                if tutorialNum == 8 {
-                                    tutorialNum = 9
-                                }
                                 generateHapticFeedback()
-                                userSettingsViewModel.updatePlusButtonImage(named: imageName)
-                                selectedImageName = imageName
-                                print("選択されたプラスボタン画像: \(imageName)")
-                            }) {
-                                VStack {
-                                    Image(imageName)
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 50, height: 50)
-                                        .padding()
+                                if let number = extractNumber(from: imageName), (6...10).contains(number) {
+                                    if authManager.userPreFlag == 0 {
+                                        preFlag = true
+                                    } else {
+                                        withAnimation {
+                                            if tutorialNum == 8 {
+                                                tutorialNum = 9
+                                            }
+                                            userSettingsViewModel.updatePlusButtonImage(named: imageName)
+                                            selectedImageName = imageName
+                                        }
+                                    }
+                                } else {
+                                    withAnimation {
+                                        if tutorialNum == 8 {
+                                            tutorialNum = 9
+                                        }
+                                        userSettingsViewModel.updatePlusButtonImage(named: imageName)
+                                        selectedImageName = imageName
+                                    }
                                 }
-                                .background(selectedImageName == imageName ? Color.gray.opacity(0.3) : Color.clear)
-                                .cornerRadius(8)
-                            }        
+                            }) {
+                                ZStack{
+                                    VStack {
+                                        Image(imageName)
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 50, height: 50)
+                                            .padding()
+                                    }
+                                    .background(selectedImageName == imageName ? Color.gray.opacity(0.3) : Color.clear)
+                                    .cornerRadius(8)
+                                    if let number = extractNumber(from: imageName), (6...10).contains(number) {
+                                        VStack{
+                                            Spacer()
+                                            HStack{
+                                                Spacer()
+                                                Image(systemName: "crown.fill")
+                                                    .foregroundColor(.yellow)
+                                                    .font(.system(size: 12))
+                                                    .padding(5)
+                                                    .background(Color.black.opacity(0.7))
+                                                    .cornerRadius(10)
+                                                    .padding(.trailing, 10)
+                                                    .opacity(authManager.userPreFlag == 0 ? 1 : 0)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                             .background(
                                 ZStack {
                                     // プラスボタン紫6 だけ GeometryReader を付与
-                                    if imageName == "プラスボタン紫6" {
+                                    if imageName == "プラスボタン紫5" {
                                         GeometryReader { geometry in
                                             Color.clear
                                                 .preference(key: ViewPositionKey5.self, value: [geometry.frame(in: .global)])
@@ -202,7 +234,7 @@ struct PlusButtonEditorView: View {
                         .overlay(
                             RoundedRectangle(cornerRadius: 10, style: .continuous)
                                 .frame(width: buttonRect.width, height: buttonRect.height)
-                                .position(x: buttonRect.midX, y: isSmallDevice() ? buttonRect.midY - 40 : buttonRect.midY - 70)
+                                .position(x: buttonRect.midX, y: isSmallDevice() ? buttonRect.midY - 40 : isiPhone12Or13() ? buttonRect.midY - 70 : buttonRect.midY - 70)
                                 .blendMode(.destinationOut)
                         )
                         .ignoresSafeArea()
@@ -288,7 +320,7 @@ struct PlusButtonEditorView: View {
                         .overlay(
                             RoundedRectangle(cornerRadius: 10, style: .continuous)
                                 .frame(width: buttonRect2.width, height: buttonRect2.height)
-                                .position(x: buttonRect2.midX, y: isSmallDevice() ? buttonRect2.midY - 40 : buttonRect2.midY - 70)
+                                .position(x: buttonRect2.midX, y: isSmallDevice() ? buttonRect2.midY - 40 : isiPhone12Or13() ? buttonRect2.midY - 57 : buttonRect2.midY - 70)
                                 .blendMode(.destinationOut)
                         )
                         .ignoresSafeArea()
@@ -301,7 +333,7 @@ struct PlusButtonEditorView: View {
                 }
                 VStack {
                     Spacer()
-                        .frame(height: isSmallDevice() ? buttonRect2.minY - bubbleHeight2 + 130 : buttonRect2.minY - bubbleHeight2 + 100)
+                        .frame(height: isSmallDevice() ? buttonRect2.minY - bubbleHeight2 + 130 : isiPhone12Or13() ? buttonRect2.minY - bubbleHeight2 + 110 : buttonRect2.minY - bubbleHeight2 + 100)
                     VStack(alignment: .trailing, spacing: 10) {
                         HStack {
                             Spacer()
@@ -375,7 +407,7 @@ struct PlusButtonEditorView: View {
                         .overlay(
                             RoundedRectangle(cornerRadius: 10, style: .continuous)
                                 .frame(width: buttonRect3.width, height: buttonRect3.height)
-                                .position(x: buttonRect3.midX, y: isSmallDevice() ? buttonRect3.midY - 40 :  buttonRect3.midY - 70)
+                                .position(x: buttonRect3.midX, y: isSmallDevice() ? buttonRect3.midY - 40 : isiPhone12Or13() ? buttonRect3.midY - 55 : buttonRect3.midY - 70)
                                 .blendMode(.destinationOut)
                         )
                         .ignoresSafeArea()
@@ -464,7 +496,7 @@ struct PlusButtonEditorView: View {
                             RoundedRectangle(cornerRadius: 10, style: .continuous)
                                 .padding(-5)
                                 .frame(width: buttonRect4.width, height: buttonRect4.height)
-                                .position(x: buttonRect4.midX, y: isSmallDevice() ? buttonRect4.midY - 40 :  buttonRect4.midY - 70)
+                                .position(x: buttonRect4.midX, y: isSmallDevice() ? buttonRect4.midY - 40 : isiPhone12Or13() ? buttonRect4.midY - 57 : buttonRect4.midY - 70)
                                 .blendMode(.destinationOut)
                         )
                         .ignoresSafeArea()
@@ -477,7 +509,7 @@ struct PlusButtonEditorView: View {
                 }
                 VStack {
                     Spacer()
-                        .frame(height: isSmallDevice() ? buttonRect4.minY - bubbleHeight4 - 60 : buttonRect4.minY - bubbleHeight4 - 90)
+                        .frame(height: isSmallDevice() ? buttonRect4.minY - bubbleHeight4 - 60 : isiPhone12Or13() ? buttonRect4.minY - bubbleHeight4 - 70 : buttonRect4.minY - bubbleHeight4 - 90)
                     VStack(alignment: .trailing, spacing: 10) {
                         HStack {
                             Spacer()
@@ -546,6 +578,16 @@ struct PlusButtonEditorView: View {
                 }
             }
         }
+        .onAppear{
+            authManager.fetchPreFlag{}
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                userPreFlag = authManager.userPreFlag
+            }
+        }
+        .fullScreenCover(isPresented: $preFlag) {
+            PreView(changeTitle: .constant(2))
+        }
+        .foregroundColor(Color("fontGray"))
         .sheet(isPresented: $isColorSheetPresented) {
             VStack(spacing: 20) {
                 Text("色を選択")
@@ -582,6 +624,10 @@ struct PlusButtonEditorView: View {
                                             Circle()
                                                 .stroke(selectedCategory?.name == category.name ? Color.black : Color.clear, lineWidth: 3)
                                         )
+                                        .overlay(
+                                            Circle()
+                                                .stroke(category.name == "プラスボタン白" ? Color.black : Color.clear, lineWidth: 1)
+                                        )
                                     
                                     if selectedCategory?.name == category.name {
                                         Image(systemName: "checkmark")
@@ -596,6 +642,9 @@ struct PlusButtonEditorView: View {
                 }
             }
             .padding()
+            .foregroundColor(Color("fontGray"))
+            .background(Color("backgroundColor"))
+            .padding(.bottom)
             .presentationDetents([.large,
                                   .height(280),
                                   .fraction(isSmallDevice() ? 0.32 : 0.23)
@@ -620,8 +669,22 @@ struct PlusButtonEditorView: View {
                 filteredImageNames = predefinedPlusButtonImageNames
         }
     }
+    func isiPhone12Or13() -> Bool {
+        let screenSize = UIScreen.main.bounds.size
+        let width = min(screenSize.width, screenSize.height)
+        let height = max(screenSize.width, screenSize.height)
+        // iPhone 12,13 の画面サイズは約幅390ポイント、高さ844ポイント
+        return abs(width - 390) < 1 && abs(height - 844) < 1
+    }
+    
     func isSmallDevice() -> Bool {
         return UIScreen.main.bounds.width < 390
+    }
+    
+    func extractNumber(from imageName: String) -> Int? {
+        let digits = imageName.compactMap { $0.wholeNumberValue }
+        let numberString = digits.map(String.init).joined()
+        return Int(numberString)
     }
     
     private func generateHapticFeedback() {
@@ -632,6 +695,6 @@ struct PlusButtonEditorView: View {
 
 struct PlusButtonEditorView_Previews: PreviewProvider {
     static var previews: some View {
-        PlusButtonEditorView(userSettingsViewModel: UserSettingsViewModel(), tutorialNum: .constant(0))
+        PlusButtonEditorView(userSettingsViewModel: UserSettingsViewModel(), authManager: AuthManager(), tutorialNum: .constant(0))
     }
 }

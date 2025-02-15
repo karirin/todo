@@ -21,6 +21,7 @@ class AuthManager: ObservableObject {
     @Published var rewardPoint: Int = 0
     @Published var dateRangeText: String = ""
     @Published var userData: UserData?
+    @Published var userPreFlag: Int = 0
     var onLoginCompleted: (() -> Void)?
     
     init() {
@@ -86,6 +87,18 @@ class AuthManager: ObservableObject {
 //        }
 //    }
     
+    func updatePreFlag(userId: String, userPreFlag: Int, completion: @escaping (Bool) -> Void) {
+        let userRef = Database.database().reference().child("users").child(userId)
+        let updates = ["userPreFlag": userPreFlag]
+        userRef.updateChildValues(updates) { (error, _) in
+            if let error = error {
+                completion(false)
+            } else {
+                completion(true)
+            }
+        }
+    }
+    
     func parseDate(from dateString: String) -> Date? {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy/MM/dd"
@@ -122,6 +135,18 @@ class AuthManager: ObservableObject {
         }
     }
     
+    func fetchPreFlag(completion: @escaping () -> Void) {
+        guard let userId = user?.uid else { return }
+        let userRef = Database.database().reference().child("users").child(userId)
+        userRef.observeSingleEvent(of: .value) { snapshot in
+            if let data = snapshot.value as? [String: Any] {
+                self.userPreFlag = data["userPreFlag"] as? Int ?? 0
+                print("self.userPreFlag:\(self.userPreFlag)")
+            }
+            completion()
+        }
+    }
+    
     func fetchUserFlag(completion: @escaping (Int?, Error?) -> Void) {
         guard let userId = user?.uid else {
             // ユーザーIDがnilの場合、すなわちログインしていない場合
@@ -139,10 +164,39 @@ class AuthManager: ObservableObject {
                     completion(userFlag, nil)
                 }
             } else {
-                // userFlagが存在しない、または想定外の形式である場合
-                let error = NSError(domain: "AuthManager", code: 1, userInfo: [NSLocalizedDescriptionKey: "userFlagを取得できませんでした。"])
+                // userFlagが存在しない場合は0を返す
                 DispatchQueue.main.async {
-                    completion(nil, error)
+                    completion(0, nil)
+                }
+            }
+        } withCancel: { error in
+            // データベースの読み取りに失敗した場合
+            DispatchQueue.main.async {
+                completion(nil, error)
+            }
+        }
+    }
+    
+    func fetchUserReviewFlag(completion: @escaping (Int?, Error?) -> Void) {
+        guard let userId = user?.uid else {
+            // ユーザーIDがnilの場合、すなわちログインしていない場合
+            let error = NSError(domain: "AuthManager", code: 0, userInfo: [NSLocalizedDescriptionKey: "ログインしていません。"])
+            completion(nil, error)
+            return
+        }
+
+        let userRef = Database.database().reference().child("users").child(userId)
+        // "userFlag"の値を取得する
+        userRef.child("userReviewFlag").observeSingleEvent(of: .value) { snapshot in
+            if let userFlag = snapshot.value as? Int {
+                // userFlagが存在し、Int型として取得できた場合
+                DispatchQueue.main.async {
+                    completion(userFlag, nil)
+                }
+            } else {
+                // userFlagが存在しない場合は0を返す
+                DispatchQueue.main.async {
+                    completion(0, nil)
                 }
             }
         } withCancel: { error in
@@ -281,6 +335,32 @@ class AuthManager: ObservableObject {
 //            completion(false, error)
 //        }
 //    }
+    
+    func updateUserFlag(userId: String, userFlag: Int, completion: @escaping (Bool) -> Void) {
+        let userRef = Database.database().reference().child("users").child(userId)
+        let updates = ["userFlag": userFlag]
+        userRef.updateChildValues(updates) { (error, _) in
+            if let error = error {
+                print("Error updating tutorialNum: \(error)")
+                completion(false)
+            } else {
+                completion(true)
+            }
+        }
+    }
+    
+    func updateUserReviewFlag(userId: String, userFlag: Int, completion: @escaping (Bool) -> Void) {
+        let userRef = Database.database().reference().child("users").child(userId)
+        let updates = ["userReviewFlag": userFlag]
+        userRef.updateChildValues(updates) { (error, _) in
+            if let error = error {
+                print("Error updating tutorialNum: \(error)")
+                completion(false)
+            } else {
+                completion(true)
+            }
+        }
+    }
     
     func updateUserCsFlag(userId: String, userCsFlag: Int, completion: @escaping (Bool) -> Void) {
         let userRef = Database.database().reference().child("users").child(userId)

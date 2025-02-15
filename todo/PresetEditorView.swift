@@ -18,6 +18,7 @@ struct PresetEditorView: View {
     @State private var showDeleteAlert = false
     @State private var isSquarePreview: Bool = false
     @State private var isEditing: Bool = false
+    @State private var preFlag: Bool = false
     @State private var tutorialNum: Int = 0
     @State private var buttonRect: CGRect = .zero
     @State private var bubbleHeight: CGFloat = 0.0
@@ -306,9 +307,13 @@ struct PresetEditorView: View {
                                     .padding()
                                     Button(action: {
                                         generateHapticFeedback()
-                                        addFlag.toggle()
-                                        if tutorialNum == 3 {
-                                            tutorialNum = 4
+                                        if userSettingsViewModel.presets.count >= 2 {
+                                            preFlag = true
+                                        } else {
+                                            addFlag.toggle()
+                                            if tutorialNum == 3 {
+                                                tutorialNum = 4
+                                            }
                                         }
                                     }) {
                                         if let plusButtonImageName = userSettingsViewModel.plusButtonImageName,
@@ -1093,6 +1098,7 @@ struct PresetEditorView: View {
                 }
             }
         }
+        .foregroundColor(Color("fontGray"))
         .onPreferenceChange(ViewPositionKey10.self) { positions in
             self.buttonRect = positions.first ?? .zero
         }
@@ -1130,6 +1136,9 @@ struct PresetEditorView: View {
             if newValue {
                 isTextFieldFocused = true
             }
+        }
+        .fullScreenCover(isPresented: $preFlag) {
+            PreView(changeTitle: .constant(3))
         }
     }
     func isSmallDevice() -> Bool {

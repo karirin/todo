@@ -316,6 +316,14 @@ struct TodoListView: View {
     @State private var bubbleHeight7: CGFloat = 0.0
     @State private var buttonRect8: CGRect = .zero
     @State private var bubbleHeight8: CGFloat = 0.0
+    @State private var helpFlag: Bool = false
+    @State private var preFlag: Bool = false
+    @State private var reviewFlag: Bool = false
+    @ObservedObject var authManager = AuthManager()
+    @State private var adFlag: Bool = false
+    private let adViewControllerRepresentable = AdViewControllerRepresentable()
+    private let interstitial = Interstitial()
+    @State private var userPreFlag: Int = 0
     
     var body: some View {
         VStack{
@@ -331,70 +339,75 @@ struct TodoListView: View {
                             .shadow(color: isCustomizationMode ? Color.black : Color.clear, radius: 20)
                     }
                     VStack {
-                        ZStack {
-                            HStack {
-                                Button(action: {
-                                    generateHapticFeedback()
-                                    tutorialNum = 4
-                                }) {
-                                    Image(systemName: "questionmark.circle.fill" )
-                                        .font(.system(size: 35))
-                                        .foregroundColor(.black)
-                                }
-                                .padding(.leading)
-                                .opacity(isCustomizationMode ? 1 : 0)
-                                Spacer()
-                                Text(userSettingsViewModel.headerText)
-                                    .foregroundColor(userSettingsViewModel.headerTextColor)
-                                    .font(.system(size: 20))
-                                    .fontWeight(.bold)
-                                    .padding(.horizontal,5)
-                                    .background(Color("backgroundColor").opacity(userSettingsViewModel.headerOpacityFlag ? 0.6 : 0))
-                                    .cornerRadius(10)
-                                Spacer()
-                                Button(action: {
-                                    generateHapticFeedback()
-                                    if tutorialNum == 3 {
+                        VStack(spacing: 0) {
+                            ZStack {
+                                HStack {
+                                    Button(action: {
+                                        generateHapticFeedback()
                                         tutorialNum = 4
+                                    }) {
+                                        Image(systemName: "questionmark.circle.fill" )
+                                            .font(.system(size: 35))
+                                            .foregroundColor(.black)
                                     }
-                                    isCustomizationMode.toggle()
-                                }) {
-                                    Image(isCustomizationMode ? "編集中" : "編集前" )
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(height:40)
-                                        .zIndex(isCustomizationMode ? 1 : 0)
+                                    .padding(.leading)
+                                    .opacity(isCustomizationMode ? 1 : 0)
+                                    Spacer()
+                                    Text(userSettingsViewModel.headerText)
+                                        .foregroundColor(userSettingsViewModel.headerTextColor)
+                                        .font(.system(size: 20))
+                                        .fontWeight(.bold)
+                                        .padding(.horizontal,5)
+                                        .background(Color("backgroundColor").opacity(userSettingsViewModel.headerOpacityFlag ? 0.6 : 0))
+                                        .cornerRadius(10)
+                                    Spacer()
+                                    Button(action: {
+                                        generateHapticFeedback()
+                                        if tutorialNum == 3 {
+                                            tutorialNum = 4
+                                        }
+                                        isCustomizationMode.toggle()
+                                    }) {
+                                        Image(isCustomizationMode ? "編集中" : "編集前" )
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(height:40)
+                                            .zIndex(isCustomizationMode ? 1 : 0)
+                                    }
+                                    .background(GeometryReader { geometry in
+                                        Color.clear.preference(key: ViewPositionKey.self, value: [geometry.frame(in: .global)])
+                                    })
+                                    .padding(.trailing)
+                                }
+                                .frame(maxWidth: .infinity, maxHeight: 60)
+                                .background(
+                                    Group {
+                                        if let headerImageName = userSettingsViewModel.headerImageName,
+                                           let uiImage = UIImage(named: headerImageName) {
+                                            Image(uiImage: uiImage)
+                                                .resizable()
+                                                .edgesIgnoringSafeArea(.all)
+                                            
+                                                .shadow(color: isCustomizationMode ? Color.black.opacity(0.9) : Color.clear, radius: 10)
+                                        }
+                                    }
+                                )
+                                .foregroundColor(Color.white)
+                                .onTapGesture {
+                                    if isCustomizationMode {
+                                        print("headerEditor")
+                                        activeSheet = .headerEditor
+                                    }
                                 }
                                 .background(GeometryReader { geometry in
-                                    Color.clear.preference(key: ViewPositionKey.self, value: [geometry.frame(in: .global)])
+                                    Color.clear.preference(key: ViewPositionKey7.self, value: [geometry.frame(in: .global)])
                                 })
-                                .padding(.trailing)
                             }
-                            .frame(maxWidth: .infinity, maxHeight: 60)
-                            .background(
-                                Group {
-                                    if let headerImageName = userSettingsViewModel.headerImageName,
-                                       let uiImage = UIImage(named: headerImageName) {
-                                        Image(uiImage: uiImage)
-                                            .resizable()
-                                            .edgesIgnoringSafeArea(.all)
-                                        
-                                            .shadow(color: isCustomizationMode ? Color.black.opacity(0.9) : Color.clear, radius: 10)
-                                    }
-                                }
-                            )
-                            .foregroundColor(Color.white)
-                            .onTapGesture {
-                                if isCustomizationMode {
-                                    print("headerEditor")
-                                    activeSheet = .headerEditor
-                                }
+                            if userPreFlag != 1 {
+                                BannerView()
+                                    .frame(height: 60)
                             }
-                            .background(GeometryReader { geometry in
-                                Color.clear.preference(key: ViewPositionKey7.self, value: [geometry.frame(in: .global)])
-                            })
                         }
-                        
                         ScrollView {
                             VStack(spacing: 10) {
                                 ForEach(todoViewModel.items) { item in
@@ -497,6 +510,12 @@ struct TodoListView: View {
                             }
                         }
                     )
+                    if helpFlag {
+                        HelpModalView(isPresented: $helpFlag)
+                    }
+                    if reviewFlag {
+                        ReviewView(isPresented: $reviewFlag, helpFlag: $helpFlag)
+                    }
                     if tutorialNum == 1 {
                         Color.black.opacity(0.5)
                             .ignoresSafeArea()
@@ -1126,6 +1145,13 @@ struct TodoListView: View {
         .onPreferenceChange(ViewPositionKey9.self) { positions in
             self.buttonRect5 = positions.first ?? .zero
         }
+        .background {
+            if adFlag {
+                adViewControllerRepresentable
+                    .frame(width: .zero, height: .zero)
+            }
+        }
+        .foregroundColor(Color("fontGray"))
         .onAppear {
             let userDefaults = UserDefaults.standard
             if !userDefaults.bool(forKey: "hasLaunchedTutorialOnappear") {
@@ -1133,31 +1159,82 @@ struct TodoListView: View {
             }
             userDefaults.set(true, forKey: "hasLaunchedTutorialOnappear")
             userDefaults.synchronize()
+            let group = DispatchGroup()
+            group.enter()
+            authManager.fetchPreFlag {
+                group.leave()
+            }
+//            authManager.fetchPreFlag()
+            group.notify(queue: .main) {
+                // 両方の処理が完了したタイミングで処理を実行
+                userPreFlag = authManager.userPreFlag
+                if userPreFlag != 1 {
+                    executeProcessEveryFortyTimes()
+                    executeProcessEveryAdFifthTimes()
+                }
+            }
+            authManager.fetchUserFlag { userFlag, error in
+                if let error = error {
+                    print(error.localizedDescription)
+                } else if let userFlag = userFlag {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                        if userFlag == 0 {
+                            executeProcessEveryfifTimes()
+                        }
+                    }
+                }
+            }
+            authManager.fetchUserReviewFlag { userFlag, error in
+                if let error = error {
+                    print(error.localizedDescription)
+                } else if let userFlag = userFlag {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                        if userFlag == 0 {
+                            executeProcessEveryReviewFifthTimes()
+                        }
+                    }
+                }
+            }
+//            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+//                userPreFlag = authManager.userPreFlag
+//                if userPreFlag != 1 {
+//                    executeProcessEveryAdFifthTimes()
+//                }
+//            }
+            DispatchQueue.main.async {
+                if !interstitial.interstitialAdLoaded && interstitial.wasAdDismissed == false {
+                    interstitial.loadInterstitial(completion: { isLoaded in
+                        if isLoaded {
+                            self.interstitial.presentInterstitial(from: adViewControllerRepresentable.viewController)
+                        }
+                    })
+                } else if !interstitial.wasAdDismissed {
+                    interstitial.presentInterstitial(from: adViewControllerRepresentable.viewController)
+                }
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .sheet(item: $activeSheet) { item in
             switch item {
             case .addPost:
                 AddPostView(text: $newTodoTitle, todoViewModel: todoViewModel)
-                    .presentationDetents([.large,
-                                          .height(280),
-                                          .fraction(isSmallDevice() ? 0.65 : 0.55)
-                    ])
             case .backgroundEditor:
-                BackgroundImageView(userSettingsViewModel: userSettingsViewModel)
+                BackgroundImageView(userSettingsViewModel: userSettingsViewModel, authManager: authManager)
                     .presentationDetents([.large])
             case .headerEditor:
-                HeaderEditorView(userSettingsViewModel: userSettingsViewModel)
+                HeaderEditorView(userSettingsViewModel: userSettingsViewModel, authManager: authManager)
                     .presentationDetents([.large])
             case .plusButtonEditor:
-                PlusButtonEditorView(userSettingsViewModel: userSettingsViewModel, tutorialNum: $tutorialNum)
+                PlusButtonEditorView(userSettingsViewModel: userSettingsViewModel, authManager: authManager, tutorialNum: $tutorialNum)
                     .presentationDetents([.large])
             case .postListEditor:
-                PostListEditorView(todoViewModel: todoViewModel, userSettingsViewModel: userSettingsViewModel)
+                PostListEditorView(todoViewModel: todoViewModel, userSettingsViewModel: userSettingsViewModel, authManager: authManager)
                     .presentationDetents([.large])
             }
         }
-        
+        .fullScreenCover(isPresented: $preFlag) {
+            PreView(changeTitle: .constant(1))
+        }
         .gesture(
             DragGesture()
                 .onChanged { value in
@@ -1184,6 +1261,53 @@ struct TodoListView: View {
                     self.dragOffset = .zero
                 }
         )
+    }
+    
+    func executeProcessEveryFortyTimes() {
+        // UserDefaultsからカウンターを取得
+        let count = UserDefaults.standard.integer(forKey: "launchPreCount") + 1
+        
+        // カウンターを更新
+        UserDefaults.standard.set(count, forKey: "launchPreCount")
+        
+        // 3回に1回の割合で処理を実行
+        if count % 15 == 0 {
+            preFlag = true
+        }
+    }
+    
+    func executeProcessEveryAdFifthTimes() {
+        let countForTenTimes = UserDefaults.standard.integer(forKey: "launchCountForAdThreeTimes") + 1
+        UserDefaults.standard.set(countForTenTimes, forKey: "launchCountForAdThreeTimes")
+        
+//        print("countForTenTimes:\(countForTenTimes)")
+        if countForTenTimes % 5 == 0 {
+//            print("executeProcessEveryAdFifthTimes")
+            adFlag = true
+        }
+    }
+    
+    func executeProcessEveryReviewFifthTimes() {
+        let countForTenTimes = UserDefaults.standard.integer(forKey: "launchCountForAdThreeTimes") + 1
+        UserDefaults.standard.set(countForTenTimes, forKey: "launchCountForAdThreeTimes")
+        
+//        print("countForTenTimes:\(countForTenTimes)")
+        if countForTenTimes % 20 == 0 {
+//            print("executeProcessEveryAdFifthTimes")
+            reviewFlag = true
+        }
+    }
+    
+    func executeProcessEveryfifTimes() {
+        // UserDefaultsからカウンターを取得
+        let count = UserDefaults.standard.integer(forKey: "launchHelpCount") + 1
+        
+        // カウンターを更新
+        UserDefaults.standard.set(count, forKey: "launchHelpCount")
+        
+        if count % 15 == 0 {
+            helpFlag = true
+        }
     }
     
     private func generateHapticFeedback() {

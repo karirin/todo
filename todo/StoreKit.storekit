@@ -1,0 +1,105 @@
+{
+  "identifier" : "06105C17",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_failTransactionsEnabled" : false,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Store Sync"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Subscription Status"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Transaction"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Manage Subscriptions Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Refund Request Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Offer Code Redeem Sheet"
+      }
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "FD5AD26E",
+      "localizations" : [
+
+      ],
+      "name" : "Sub",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "2.00",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "01CA3585",
+          "introductoryOffer" : {
+            "displayPrice" : "0.99",
+            "internalID" : "7B104D1C",
+            "paymentMode" : "none"
+          },
+          "localizations" : [
+            {
+              "description" : "広告非表示",
+              "displayName" : "広告非表示",
+              "locale" : "ja"
+            }
+          ],
+          "productID" : "TODO",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "広告非表示プラン",
+          "subscriptionGroupID" : "FD5AD26E",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}

@@ -76,7 +76,7 @@ struct CalendarView: View {
                             Text(day)
                                 .frame(maxWidth: .infinity)
                                 .fontWeight(.bold)
-                                .foregroundColor(.black)
+                                .foregroundColor(Color("fontGray"))
                         }
                     }
                     .padding(.top)
@@ -95,7 +95,7 @@ struct CalendarView: View {
                                 }) {
                                     VStack {
                                         Text("\(Calendar.current.component(.day, from: date))")
-                                            .foregroundColor(Calendar.current.isDate(date, inSameDayAs: Date()) ? .red : .primary)
+                                            .foregroundColor(Calendar.current.isDate(date, inSameDayAs: Date()) ? .red : Color("fontGray"))
                                             .fontWeight(Calendar.current.isDate(date, inSameDayAs: Date()) ? .bold : .regular)
                                         if hasTodo {
                                             Circle()
@@ -149,44 +149,46 @@ struct CalendarView: View {
                             .cornerRadius(30)
                             .padding(.top)
                     } else {
-                        ForEach(filteredTodos) { item in
-                            HStack {
-                                Image(systemName: item.isCompleted ? "checkmark.circle.fill" : "circle")
-                                    .foregroundColor(userSettingsViewModel.postListTextColor)
-                                    .onTapGesture {
-                                        todoViewModel.toggleCompletion(of: item)
+                        ScrollView{
+                            ForEach(filteredTodos) { item in
+                                HStack {
+                                    Image(systemName: item.isCompleted ? "checkmark.circle.fill" : "circle")
+                                        .foregroundColor(userSettingsViewModel.postListTextColor)
+                                        .onTapGesture {
+                                            todoViewModel.toggleCompletion(of: item)
+                                        }
+                                    VStack(alignment: .leading) {
+                                        Text(item.title)
+                                            .font(.system(size: 20))
+                                            .fontWeight(.bold)
+                                            .strikethrough(item.isCompleted, color: .black)
+                                            .foregroundColor(item.isCompleted ? .gray : userSettingsViewModel.postListTextColor)
+                                            .background(Color("backgroundColor").opacity(userSettingsViewModel.postListOpacityFlag ? 0.6 : 0))
                                     }
-                                VStack(alignment: .leading) {
-                                    Text(item.title)
-                                        .font(.system(size: 20))
-                                        .fontWeight(.bold)
-                                        .strikethrough(item.isCompleted, color: .black)
-                                        .foregroundColor(item.isCompleted ? .gray : userSettingsViewModel.postListTextColor)
-                                        .background(Color("backgroundColor").opacity(userSettingsViewModel.postListOpacityFlag ? 0.6 : 0))
+                                    Spacer()
                                 }
-                                Spacer()
-                            }
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .shadow(color:  Color.gray.opacity(0.2), radius: 5)
-                            .contentShape(Rectangle())
-                            .background(
-                    //            isDragging ? Color.blue.opacity(0.2) : Color.white
-                                Group {
-                                    if let headerImageName = userSettingsViewModel.postListImageName,
-                                       let uiImage = UIImage(named: headerImageName) {
-                                        Image(uiImage: uiImage)
-                                            .resizable()
-                                            .edgesIgnoringSafeArea(.all)
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .shadow(color:  Color.gray.opacity(0.2), radius: 5)
+                                .contentShape(Rectangle())
+                                .background(
+                                    //            isDragging ? Color.blue.opacity(0.2) : Color.white
+                                    Group {
+                                        if let headerImageName = userSettingsViewModel.postListImageName,
+                                           let uiImage = UIImage(named: headerImageName) {
+                                            Image(uiImage: uiImage)
+                                                .resizable()
+                                                .edgesIgnoringSafeArea(.all)
+                                        }
                                     }
+                                )
+                                .cornerRadius(8)
+                                .padding(.horizontal)
+                                .padding(.bottom, 10)
+                                .onTapGesture {
+                                    generateHapticFeedback()
+                                    todoViewModel.toggleCompletion(of: item)
                                 }
-                            )
-                            .cornerRadius(8)
-                            .padding(.horizontal)
-                            .padding(.bottom, 10)
-                            .onTapGesture {
-                                generateHapticFeedback()
-                                todoViewModel.toggleCompletion(of: item)
                             }
                         }
                     }

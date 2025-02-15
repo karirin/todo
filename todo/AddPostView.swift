@@ -36,7 +36,7 @@ struct AddPostView: View {
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
                         Spacer()
-                        Text("ToDo実施日")
+                        Text("ToDo期限・実行日")
                             .font(.headline)
                         Spacer()
                     }
@@ -50,9 +50,9 @@ struct AddPostView: View {
                         }) {
                             HStack {
                                 Image(systemName: "calendar.circle")
-                                    .font(.system(size: isSmallDevice() ? 20 : 24))
+                                    .font(.system(size: isSmallDevice() ? 20 : isiPhone12Or13() ? 23 : 24))
                                 Text(" \(formattedDate(selectedDate))")
-                                    .font(.system(size:isSmallDevice() ? 18 : 20))
+                                    .font(.system(size:isSmallDevice() ? 18 : isiPhone12Or13() ? 19  : 20))
                                     .padding(.leading, -8)
                             }
                             .padding(isSmallDevice() ? 8 : 5)
@@ -116,6 +116,7 @@ struct AddPostView: View {
                 .padding(.top, 10)
                 .shadow(radius: 3)
             }
+            .foregroundColor(Color("fontGray"))
             .padding()
             .onAppear {
                 DispatchQueue.main.async {
@@ -124,6 +125,9 @@ struct AddPostView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .presentationDetents(isCalendarVisible
+                             ? [.large, .height(isSmallDevice() ? 650 : 600)]
+            : [.large, .height(280), .fraction(isSmallDevice() ? 0.45 : isiPhone12Or13() ? 0.35 : 0.35)])
     }
     
     private func generateHapticFeedback() {
@@ -138,11 +142,20 @@ struct AddPostView: View {
         return formatter.string(from: date)
     }
     
+    func isiPhone12Or13() -> Bool {
+        let screenSize = UIScreen.main.bounds.size
+        let width = min(screenSize.width, screenSize.height)
+        let height = max(screenSize.width, screenSize.height)
+        // iPhone 12,13 の画面サイズは約幅390ポイント、高さ844ポイント
+        return abs(width - 390) < 1 && abs(height - 844) < 1
+    }
+    
     func isSmallDevice() -> Bool {
         return UIScreen.main.bounds.width < 390
     }
 }
 
 #Preview {
-    AddPostView(text: .constant("test"), todoViewModel: TodoViewModel())
+    //AddPostView(text: .constant("test"), todoViewModel: TodoViewModel())
+    TopView()
 }

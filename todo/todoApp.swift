@@ -80,6 +80,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
                 "backgroundImageName": "灰1"
             ],
             "header": [
+                "headerText": "ToDo一覧",
                 "headerImageName": "ヘッダ白11",
                 "headerOpacityFlag": false,
                 "headerTextColor": "#000000"
@@ -109,6 +110,7 @@ struct todoApp: App {
     // register app delegate for Firebase setup
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     @State var isActive = false
+    @StateObject var appState = AppState()
 
     var body: some Scene {
       WindowGroup {
@@ -118,10 +120,15 @@ struct todoApp: App {
             } else {
                TopView()
             }
-        }.navigationViewStyle(StackNavigationViewStyle())
+        }
+        //.navigationViewStyle(StackNavigationViewStyle())
         .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                 withAnimation {
+                    if appState.isBannerVisible {
+                        AuthManager().updatePreFlag(userId: AuthManager().currentUserId!, userPreFlag: 0){ success in
+                        }
+                    }
                     self.isActive = true
                 }
             }

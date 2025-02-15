@@ -26,6 +26,10 @@ struct TopView: View {
                 .tabItem {
                     Label("カスタマイズ", systemImage: "rectangle.grid.2x2")
                 }
+            ContactTabView()
+                .tabItem {
+                    Label("問い合わせ", systemImage: "headphones")
+                }
             SettingView()
                 .tabItem {
                     Label("設定", systemImage: "gear")

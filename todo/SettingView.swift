@@ -125,14 +125,6 @@ struct SettingView: View {
             .navigationBarTitle("設定")
         }
         .navigationViewStyle(StackNavigationViewStyle())
-        .navigationBarItems(leading: Button(action: {
-                            self.presentationMode.wrappedValue.dismiss()
-                        }) {
-                            Image(systemName: "chevron.left")
-                                .foregroundColor(Color("fontGray"))
-                            Text("戻る")
-                                .foregroundColor(Color("fontGray"))
-                        })
     }
 }
 

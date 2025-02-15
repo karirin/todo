@@ -39,7 +39,7 @@ struct UserSettings: Codable {
     
     init(
         background: BackgroundSettings = BackgroundSettings( backgroundImageName: nil),
-        header: HeaderSettings = HeaderSettings(headerImageName: nil, headerText: "TODO一覧", headerTextColor: "#000000", headerOpacityFlag: false),
+        header: HeaderSettings = HeaderSettings(headerImageName: nil, headerText: "ToDo一覧", headerTextColor: "#000000", headerOpacityFlag: false),
         postList: PostListSettings = PostListSettings(postListImageName: nil, postListTextColor: "#000000", postListOpacityFlag: false),
         plusButton: PlusButtonSettings = PlusButtonSettings(plusButtonImageName: nil)
     ) {
@@ -54,7 +54,7 @@ class UserSettingsViewModel: ObservableObject {
     @Published var settings: UserSettings
     @Published var backgroundImageName: String? = nil
     @Published var headerImageName: String? = nil
-    @Published var headerText: String = "TODO一覧"
+    @Published var headerText: String = "ToDo一覧"
     @Published var headerTextColor: Color = .black
     @Published var headerOpacityFlag: Bool = false
     @Published var postListTextColor: Color = .black
@@ -130,13 +130,13 @@ class UserSettingsViewModel: ObservableObject {
                 
                 // ヘッダー設定
                 if let headerDict = dict["header"] as? [String: Any],
-//                   let headerColor = headerDict["headerColor"] as? String,
                    let headerText = headerDict["headerText"] as? String,
                    let headerTextColorHex = headerDict["headerTextColor"] as? String,
                    let headerOpacityFlag = headerDict["headerOpacityFlag"] as? Bool{
                     DispatchQueue.main.async {
                         self.headerText = headerText
                         self.headerTextColor = Color(hex: headerTextColorHex)
+                        print("self.headerTextColor|||||        :\(self.headerTextColor)")
                         self.headerOpacityFlag = headerOpacityFlag
                     }
                 }
@@ -193,7 +193,7 @@ class UserSettingsViewModel: ObservableObject {
                     self.settings = UserSettings()
                     self.backgroundImageName = nil
                     self.headerImageName = nil
-                    self.headerText = "TODO一覧"
+                    self.headerText = "ToDo一覧"
                     self.headerTextColor = .black
                     self.headerOpacityFlag = false
                     self.postListImageName = nil

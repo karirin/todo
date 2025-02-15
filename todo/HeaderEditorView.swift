@@ -23,6 +23,10 @@ struct HeaderEditorView: View {
     @State private var selectedTextColorHex: String = "#000000" // 選択されたテキスト色のHexコード
     @State private var isInitializing: Bool = true
     @State private var headerOpacityFlag: Bool = false
+    @State private var preFlag: Bool = false
+    @State private var isTextColorPickerExpanded: Bool = false
+    @State private var userPreFlag: Int = 0
+    @ObservedObject var authManager: AuthManager
 
     let predefinedColorHexes: [String] = [
         "#FEFEFE", // White
@@ -54,21 +58,18 @@ struct HeaderEditorView: View {
     ]
     
     let colorCategories: [ColorCategory] = [
-        ColorCategory(name: "ヘッダ黄", color: Color(hex: "#FFFF00")),    // Yellow
-        ColorCategory(name: "ヘッダ薄緑", color: Color(hex: "#ADFF2F")),  // YellowGreen
+        ColorCategory(name: "ヘッダ白", color: Color(hex: "#FFFFFF")),    // White
+        ColorCategory(name: "ヘッダ黒", color: Color(hex: "#000000")),    // Black
         ColorCategory(name: "ヘッダ灰", color: Color(hex: "#808080")),    // Gray
-        ColorCategory(name: "ヘッダ水", color: Color(hex: "#00BFFF")),    // DeepSkyBlue
-        // ColorCategory(name: "ヘッダ薄水", color: Color(hex: "#87CEFA")),  // LightSkyBlue
-        ColorCategory(name: "ヘッダ青", color: Color(hex: "#0000FF")),    // Blue
-        ColorCategory(name: "ヘッダ緑", color: Color(hex: "#008000")),    // Green
-        
-        // 追加する色カテゴリ
-        ColorCategory(name: "ヘッダ紫", color: Color(hex: "#800080")),    // Purple
         ColorCategory(name: "ヘッダ赤", color: Color(hex: "#FF0000")),    // Red
         ColorCategory(name: "ヘッダ橙", color: Color(hex: "#FFA500")),    // Orange
-        ColorCategory(name: "ヘッダ桃", color: Color(hex: "#FFDAB9")),    // Peach
-        ColorCategory(name: "ヘッダ黒", color: Color(hex: "#000000")),    // Black
-        ColorCategory(name: "ヘッダ白", color: Color(hex: "#FFFFFF")),    // White
+        ColorCategory(name: "ヘッダ黄", color: Color(hex: "#FFFF00")),    // Yellow
+        ColorCategory(name: "ヘッダ薄緑", color: Color(hex: "#ADFF2F")),  // YellowGreen
+        ColorCategory(name: "ヘッダ緑", color: Color(hex: "#008000")),    // Green
+        ColorCategory(name: "ヘッダ水", color: Color(hex: "#00BFFF")),    // DeepSkyBlue
+        ColorCategory(name: "ヘッダ青", color: Color(hex: "#0000FF")),    // Blue
+        ColorCategory(name: "ヘッダ紫", color: Color(hex: "#800080")),    // Purple
+        ColorCategory(name: "ヘッダ桃", color: Color(hex: "#FF66C4")),    // Peach
     ]
     
     var body: some View {
@@ -93,14 +94,32 @@ struct HeaderEditorView: View {
             .padding(.horizontal)
             
             VStack(alignment: .leading, spacing: 10) {
-                HStack {
-                    Spacer()
-                    Text("文字色を選択")
-                        .font(.headline)
-                    Spacer()
+                Button(action: {
+                    isTextColorPickerExpanded.toggle()
+                    generateHapticFeedback()
+                }) {
+                    HStack{
+                        Text("もっと見る")
+                            .padding(5)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(Color.gray, lineWidth: 1)
+                            )
+                            .opacity(0)
+                        Spacer()
+                        Text("文字色を選択")
+                            .font(.headline)
+                        Spacer()
+                        Text("もっと見る")
+                            .padding(5)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(Color.gray, lineWidth: 1)
+                            )
+                    }
                 }
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 20) {
-                    ForEach(predefinedColorHexes, id: \.self) { hex in
+                    ForEach(predefinedColorHexes.prefix(isTextColorPickerExpanded ? 10 : 5), id: \.self) { hex in
                         ColorButton(
                             hex: hex,
                             selectedHex: userSettingsViewModel.headerTextColor.toHex()!
@@ -109,14 +128,21 @@ struct HeaderEditorView: View {
                                 if isInitializing { return }
                                 generateHapticFeedback()
                                 // その後、ヘッダーテキスト色を更新
+//                                selectedHex = hex
                                 selectedTextColorHex = hex
                                 let selectedTextColor = Color(hex: hex)
                                 headerTextColor = selectedTextColor
                                 userSettingsViewModel.updateHeaderTextColor(selectedTextColor)
                             }
                         }
-                        .onAppear {
-                            print("hex      :\(selectedTextColorHex)")
+                        .onAppear{
+                            
+                            print("hex      :\(hex)")
+                            print("userSettingsViewModel.headerTextColor.toHex()!   :\(userSettingsViewModel.headerTextColor.toHex()!)")
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                                print("hex      1:\(hex)")
+                                print("userSettingsViewModel.headerTextColor.toHex()!   1:\(userSettingsViewModel.headerTextColor)")
+                            }
                         }
                     }
                 }
@@ -162,7 +188,6 @@ struct HeaderEditorView: View {
                         Text("色で探す")
                     }
                     .padding(5)
-                    .foregroundColor(.gray)
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
                             .stroke(Color.gray, lineWidth: 1)
@@ -196,25 +221,58 @@ struct HeaderEditorView: View {
                     }
                     ForEach(filteredImageNames, id: \.self) { imageName in
                         HStack {
-                            Image(imageName)
-                                .resizable()
-                                .scaledToFit()
-                                .cornerRadius(8)
-                                .onTapGesture {
-                                    generateHapticFeedback()
-                                    withAnimation {
-                                        headerImageName = imageName
-                                        if let imageName = headerImageName {
-                                            userSettingsViewModel.updateHeaderImage(named: imageName)
-                                        } else {
-                                            userSettingsViewModel.clearHeaderImage()
+                            ZStack{
+                                Image(imageName)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .cornerRadius(8)
+                                    .onTapGesture {
+                                        generateHapticFeedback()
+                                        withAnimation {
+                                            if let number = extractNumber(from: imageName), (6...11).contains(number) {
+                                                if authManager.userPreFlag == 0 {
+                                                    preFlag = true
+                                                } else {
+                                                    withAnimation {
+                                                        headerImageName = imageName
+                                                        if let imageName = headerImageName {
+                                                            userSettingsViewModel.updateHeaderImage(named: imageName)
+                                                        } else {
+                                                            userSettingsViewModel.clearHeaderImage()
+                                                        }
+                                                    }
+                                                }
+                                            } else {
+                                                withAnimation {
+                                                    headerImageName = imageName
+                                                    if let imageName = headerImageName {
+                                                        userSettingsViewModel.updateHeaderImage(named: imageName)
+                                                    } else {
+                                                        userSettingsViewModel.clearHeaderImage()
+                                                    }
+                                                }
+                                            }
                                         }
+                                        
+                                    }
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(userSettingsViewModel.headerImageName == imageName ? Color.black : Color.clear, lineWidth: 3)
+                                    )
+                                if let number = extractNumber(from: imageName), (6...11).contains(number) {
+                                    HStack{
+                                        Spacer()
+                                        Image(systemName: "crown.fill")
+                                            .foregroundColor(.yellow)
+                                            .font(.system(size: 16))
+                                            .padding(5)
+                                            .background(Color.black.opacity(0.7))
+                                            .cornerRadius(10)
+                                            .padding(.trailing, 10)
+                                            .opacity(authManager.userPreFlag == 0 ? 1 : 0)
                                     }
                                 }
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(userSettingsViewModel.headerImageName == imageName ? Color.black : Color.clear, lineWidth: 3)
-                                )
+                            }
                         }
                     }
                 }
@@ -233,6 +291,7 @@ struct HeaderEditorView: View {
             }
         }
         .padding()
+        .foregroundColor(Color("fontGray"))
         .background(Color("backgroundColor"))
         .onAppear {
                 self.headerText = userSettingsViewModel.headerText
@@ -243,9 +302,13 @@ struct HeaderEditorView: View {
                 } else {
                     filteredImageNames = predefinedBackgroundImageNames
                 }
+                authManager.fetchPreFlag{}
                 DispatchQueue.main.async {
                     isInitializing = false
                 }
+            }
+            .fullScreenCover(isPresented: $preFlag) {
+                PreView(changeTitle: .constant(2))
             }
             .sheet(isPresented: $isColorSheetPresented) {
                 VStack(spacing: 20) {
@@ -279,6 +342,10 @@ struct HeaderEditorView: View {
                                             .frame(width: 50, height: 50)
                                             .overlay(
                                                 Circle()
+                                                    .stroke(category.name == "ヘッダ白" ? Color.black : Color.clear, lineWidth: 1)
+                                            )
+                                            .overlay(
+                                                Circle()
                                                     .stroke(selectedCategory?.name == category.name ? Color.black : Color.clear, lineWidth: 3)
                                             )
                                         
@@ -294,6 +361,9 @@ struct HeaderEditorView: View {
                     }
                 }
                 .padding()
+                .padding(.bottom)
+                .foregroundColor(Color("fontGray"))
+                .background(Color("backgroundColor"))
                 .presentationDetents([.large,
                                       .height(280),
                                       .fraction(isSmallDevice() ? 0.32 : 0.23)
@@ -308,6 +378,12 @@ struct HeaderEditorView: View {
     private func generateHapticFeedback() {
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.impactOccurred()
+    }
+    
+    func extractNumber(from imageName: String) -> Int? {
+        let digits = imageName.compactMap { $0.wholeNumberValue }
+        let numberString = digits.map(String.init).joined()
+        return Int(numberString)
     }
     
     func closestColorCategory(to color: Color) -> ColorCategory? {
@@ -334,5 +410,5 @@ struct HeaderEditorView: View {
 }
 
 #Preview {
-    HeaderEditorView(userSettingsViewModel: UserSettingsViewModel())
+    HeaderEditorView(userSettingsViewModel: UserSettingsViewModel(), authManager: AuthManager())
 }

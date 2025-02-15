@@ -74,6 +74,10 @@ struct ColorButton: View {
                         Circle()
                             .stroke(isSelected ? Color.black : Color.clear, lineWidth: 3)
                     )
+                    .overlay(
+                        Circle()
+                            .stroke(hex == "#FEFEFE" ? Color.black : Color.clear, lineWidth: 1)
+                    )
                 
                 if isSelected {
                     Image(systemName: "checkmark")
